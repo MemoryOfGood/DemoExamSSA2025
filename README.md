@@ -44,7 +44,7 @@ chmod +x mariadb_repo_setup
 sudo ./mariadb_repo_setup
 ```
 
-Добавление [репозиториев Samba](https://samba.tranquil.it/doc/en/samba_config_server/debian/server_install_samba_debian.html) на HQ-SRV
+Не обязательно, добавление [репозиториев Samba](https://samba.tranquil.it/doc/en/samba_config_server/debian/server_install_samba_debian.html) на HQ-SRV
 ```
 wget -qO-  https://samba.tranquil.it/tissamba-pubkey.gpg | sudo tee /usr/share/keyrings/tissamba.gpg > /dev/null
 sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/tissamba.gpg] https://samba.tranquil.it/debian/samba-4.20/ $(lsb_release -c -s) main" > /etc/apt/sources.list.d/tissamba.list'
@@ -62,7 +62,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 sudo apt update
 ```
 
-Добавление репозиториев Яндекс браузера на HQ-CLI
+Не обязательно, добавление репозиториев Яндекс браузера на HQ-CLI
 ```
 curl -fsSL https://repo.yandex.ru/yandex-browser/YANDEX-BROWSER-KEY.GPG | gpg --dearmor | sudo tee /usr/share/keyrings/yandex.gpg > /dev/null
 echo "deb [arch=amd64 signed-by=/usr/share/keyrings/yandex.gpg] http://repo.yandex.ru/yandex-browser/deb stable main" | sudo tee /etc/apt/sources.list.d/yandex-browser.list
@@ -129,9 +129,9 @@ sudo apt update
 |  BR-RTR  |  br-rtr.au-team.irpo  |  A  |
 |  HQ-CLI  |  hq-cli.au-team.irpo  |  A,PTR  |
 |  HQ-SRV  |  hq-srv.au-team.irpo  |  A,PTR  |
-|  HQ-SRV  |  moodle.au-team.irpo  |  CNAME  |
-|  BR-SRV  |  br-srv.au-team.irpo  |  A,PTR  |
-|  BR-SRV  |  wiki.au-team.irpo  |  CNAME  |
+|  BR-SRV  |  br-srv.au-team.irpo  |  A  |
+|  ISP  |  moodle.au-team.irpo  |  CNAME  |
+|  ISP  |  wiki.au-team.irpo  |  CNAME  |
 
 
 
@@ -152,14 +152,14 @@ sudo apt update
 |  :---:  |  ---  |  :---:  |
 |  HQ-RTR  |  hq-rtr.au-team.irpo  |  A,PTR  |
 |  BR-RTR  |  br-rtr.au-team.irpo  |  A  |
-|  HQ-SRV  |  moodle.au-team.irpo  |  CNAME  |
-|  BR-SRV  |  br-srv.au-team.irpo  |  A,PTR  |
-|  BR-SRV  |  wiki.au-team.irpo  |  CNAME  |
+|  BR-SRV  |  br-srv.au-team.irpo  |  A  |
+|  ISP  |  moodle.au-team.irpo  |  CNAME  |
+|  ISP  |  wiki.au-team.irpo  |  CNAME  |
 
 > [!NOTE]
 > Записи  A, PTR для HQ-SRV и HQ-CLI автоматически создаются, для HQ-SRV после развертывания домена, а для HQ-CLI после ввода машины в домен  
 
-### 3. Сетевое файлое храниалище (NFS)
+### 3. Сетевое файлое хранилище (NFS)
 ### 4. Служба сетевого времени (NTP)
 ### 5. Служба Ansible на BR-SRV
 ### 6. Docker compose на BR-SRV
@@ -167,9 +167,7 @@ sudo apt update
 > для скачивания можно поменять на Мост/Bridged и после вернуть
 ### 7. Статическая трансляция портов
 ### 8. Сервис Moodle на HQ-SRV 
-### 9*. Обратный прокси-сервер (nginx)
-> [!CAUTION]
-> Этот пункт пропускается, так как предпологается ошибочным
+### 9. Обратный прокси-сервер (nginx) на ~~HQ-RTR~~ ISP
 ### 10. Яндекс Браузер
 
 > [!TIP]
