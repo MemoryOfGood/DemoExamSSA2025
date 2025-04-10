@@ -44,14 +44,6 @@ chmod +x mariadb_repo_setup
 sudo ./mariadb_repo_setup
 ```
 
-Не обязательно, добавление [репозиториев Samba](https://samba.tranquil.it/doc/en/samba_config_server/debian/server_install_samba_debian.html) на HQ-SRV
-```
-wget -qO-  https://samba.tranquil.it/tissamba-pubkey.gpg | sudo tee /usr/share/keyrings/tissamba.gpg > /dev/null
-sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/tissamba.gpg] https://samba.tranquil.it/debian/samba-4.20/ $(lsb_release -c -s) main" > /etc/apt/sources.list.d/tissamba.list'
-sudo apt update
-```
-
-
 Добавление [репозиториев Docker](https://docs.docker.com/engine/install/debian/) на BR-SRV
 ```
 sudo apt install ca-certificates curl
@@ -59,6 +51,13 @@ sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+```
+
+Не обязательно, добавление [репозиториев Samba](https://samba.tranquil.it/doc/en/samba_config_server/debian/server_install_samba_debian.html) на HQ-SRV
+```
+wget -qO-  https://samba.tranquil.it/tissamba-pubkey.gpg | sudo tee /usr/share/keyrings/tissamba.gpg > /dev/null
+sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/tissamba.gpg] https://samba.tranquil.it/debian/samba-4.20/ $(lsb_release -c -s) main" > /etc/apt/sources.list.d/tissamba.list'
 sudo apt update
 ```
 
@@ -70,18 +69,16 @@ sudo apt update
 ```
 
 > [!IMPORTANT]
-> При проверки доступности репозиториев Яндекс мод=жет вывоодится, что данный репозиорий не найден\
+> При проверки доступности репозиториев Яндекс может выводится, что данный репозиорий не найден\
 > Стоит тогда повторить обновление репозиториев
 
-![{3B74A39F-1A35-4DD3-939E-3EC8D4A7E70C}](https://github.com/user-attachments/assets/ed1cb455-dfbf-48fb-b2b3-822a274eb459)
-
+![Проверка репозиторий](https://github.com/user-attachments/assets/ed1cb455-dfbf-48fb-b2b3-822a274eb459)\
 **Рисунок 1**
 
 ### 3. Подключение виртуальных машин  
 
-![Топология](https://github.com/user-attachments/assets/6e7b0b78-a47c-467f-a61b-08e421c27acf)
-
-**Рисунок 2. Топология сети**
+![Топология](https://github.com/user-attachments/assets/6e7b0b78-a47c-467f-a61b-08e421c27acf)\
+**Рисунок 2 - Топология сети**
 
 > [!WARNING]
 > 1. Виртуальный коммутатор будет реализован на HQ-RTR.
@@ -109,10 +106,76 @@ sudo apt update
 |  HQ-CLI ens33.200  |  192.168.2.14/28  |  192.168.2.1  |
 |  BR-SRV ens33  |  192.168.3.30/27  |  192.168.3.1  |
 
-### 2. Настройка ISP
+
+
+> [!WARNING]
+> Настройка ISP проводится в следующем отдельном пункте, но указываем IP-адреса ISP в таблицу\
+> Для HQ-RTR, HQ-SRV, HQ-CLI и BR-RTR IP-адреса связанные с VLAN устанавливаем в пункте с настройкой виртуального коммутатора
+
+### 2. Конфигурация ISP
+
+Изменяем имя виртуальной машины
+```
+sudo hostnamectl set-hostname ISP.au-team.irpo
+sudo reboot
+```
+
+Также вносим изменение в файл /etc/hosts, для коректной работы
+```
+sudo nano /etc/hosts
+127.0.1.1  ISP  ISP.au-team.irpo
+ctrl+x
+y
+enter
+```
+![hosts](https://github.com/user-attachments/assets/cef966ec-3287-4b75-b2ee-ce065f76a356)\
+**Рисунок  - /etc/hosts**
+
+Устанавливаем Network-Manager, указываем IP адреса и проверяем их
+```
+sudo apt install network-manager -y
+nmtui
+ip -c a 
+```
+
+![nmtui](https://github.com/user-attachments/assets/a14fd562-c0f9-43c0-9d45-f465b997067d)\
+**Рисунок  - nmtui**
+
+
+![Адреса](https://github.com/user-attachments/assets/0d1d7a1e-dba5-4b0f-a9d4-6a214ce42e29)\
+**Рисунок  - IP адреса ISP**
+
+Устанавливаем iptables и настраиваем маршутизацию из внешной сети 
+```
+sudo apt install iptables
+sudo sh -c 'echo 1 > /proc/sys/net/ipv4/ip_forward'
+sudo iptables -t nat -A POSTROUTING -o ens33 -j MASQUERADE
+```
+
+Раскоменчиваем параметр net.ipv4.ip_forward=1
+```
+sudo nano /etc/sysctl.conf
+net.ipv4.ip_forward=1
+ctrl+z
+y
+enter
+```
+
+![ip_forward](https://github.com/user-attachments/assets/a6ac726e-434b-4faa-ae87-b5db2d3391a3)\
+**Рисунок**
+
+Cохраняем правило для iptables 
+```
+sudo apt install iptables-persistent
+```
+
 ### 3. Локальные учетные записи
+>[!NOTE]
+>Тут предоставленна настройка на HQ-SRV, но настройка индентична для BR-SRV
+
+
 ### 4. Виртуальный коммутатор HQ
-### 5. Удаленный доступ sshd
+### 5. Удаленный доступ sshd (openssh-server)
 ### 6. Туннель
 ### 7. Динамическая маршрутизация (OSPF)
 ### 8. Динамическая трансляция адресов (NAT)
@@ -138,14 +201,14 @@ sudo apt update
 
 ### 11. Часовой пояс
 > [!TIP]
-> этот пукнт выполнен при установки ОС
+> этот пукнт может быть выполнен при установки ОС
 
 
 ## Модуль 2. Организация сетевого администрирования операционных систем
 ### 1. Доменный контролер Samba на HQ-SRV
 ### 2*. DNS-сервер на HQ-SRV (BIND-DLZ)
 > [!IMPORTANT]
-> ИМХО Этот пункт должен находится здесь, так как настройка при наличии и отсуствии доменного контролера сильно различается
+> ИМХО Этот пункт должен находится здесь, так как настройка DNS сервера при наличии и отсуствии доменного контролера сильно различается
 
 **Таблица 4**
 |  Устройство  |  Запись  |  Тип   |
@@ -159,14 +222,111 @@ sudo apt update
 > [!NOTE]
 > Записи  A, PTR для HQ-SRV и HQ-CLI автоматически создаются, для HQ-SRV после развертывания домена, а для HQ-CLI после ввода машины в домен  
 
-### 3. Сетевое файлое хранилище (NFS)
-### 4. Служба сетевого времени (NTP)
+### 3. Сетевое файлое хранилище (NFS сервер)
+``` 
+sudo apt install mdadm
+lsblk 
+sudo mdadm --create --verbose /dev/md0 --level=5 --raid-devices=3 /dev/sdb /dev/sdc /dev/sdd
+sudo mkfs.ext4 -F /dev/md0
+sudo mkdir /raid5
+sudo mount /dev/md0 /raid5
+```
+просмотр точек подключения
+```
+df -h
+```
+```
+sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
+sudo update-initramfs -u
+sudo echo '/dev/md0 /raid5 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fstab
+``` 
+```
+sudo apt install nfs-kernel-server -y 
+sudo systemctl start nfs-kernel-server
+sudo systemctl enable nfs-kernel-server
+
+sudo mkdir -p /raid5/nfs
+sudo chown nobody:nogroup /raid5/nfs 
+sudo chmod 755 /raid5/nfs			
+sudo echo '/raid5/nfs 192.168.2.0/28(rw,sync,no_subtree_check)' | sudo tee -a /etc/exports
+```
+```
+sudo exportfs -a
+```
+```
+sudo apt install nfs-common -y 
+sudo mkdir /mnt/nfs
+sudo echo '192.168.3.30:/raid5/nfs /mnt/nfs nfs4 defaults,user,exec,_netdev 0 0' | sudo tee -a /etc/fstab
+```
+```
+sudo systemctl daemon-reload
+sudo mount -a
+```
+### 4. Служба сетевого времени (NTP сервер)
 ### 5. Служба Ansible на BR-SRV
 ### 6. Docker compose на BR-SRV
 > [!TIP]
 > для скачивания можно поменять на Мост/Bridged и после вернуть
+Устанавливаем Docker
+```
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose docker-compose-plugin
+```
+
+```
+sudo usermod -aG docker $USER
+sudo chown $USER /var/run/docker.sock
+```
+Создаём конфигурационный файл для MediaWiki
+```
+sudo nano wiki.yml
+```
+> [!WARNING]
+> Внимательно следите за отступами, оступы делаются пробелом, а не "TAB"
+
+Пример конфигурационного файла
+```
+services:
+ MediaWiki:
+  container_name: wiki
+  image: mediawiki
+  restart: always
+  ports:
+   - 8080:80
+  links:
+   - database
+  volumes:
+   - images:/var/www/html/images
+   #- ./LocalSettings.php:/var/www/html/LocalSettings.php
+ database:
+  container_name: db
+  image: mysql
+  restart: always
+  environment:
+   MYSQL_DATABASE: mediawiki
+   MYSQL_USER: wiki
+   MYSQL_PASSWORD: DEP@ssw0rd
+   MYSQL_RANDOM_ROOT_PASSWORD: 'yes'	
+  volumes:
+    - dbvolume:/var/lib/mysql
+
+volumes:
+ images:
+ dbvolume:
+  external: true
+```
+
+Создаём отдельный раздел для БД Вики
+```
+sudo docker volume create --name=dbvolume
+```
+Запускаем докер указывая конфигурационный файл
+```
+docker compose -f wiki.yml up
+```
+
 ### 7. Статическая трансляция портов
 ### 8. Сервис Moodle на HQ-SRV 
+
 ### 9. Обратный прокси-сервер (nginx) на ~~HQ-RTR~~ ISP
 ### 10. Яндекс Браузер
 
