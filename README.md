@@ -1,5 +1,5 @@
 # DemoExamSSA2025
-Вариант по демострационному экзаменну 2025 
+Вариант по демострационному экзамену 2025 
 
 ## Модуль 0. Подготовка виртуальных машин
 ### 1. Виртуальные машины
@@ -107,10 +107,86 @@ sudo apt update
 |  BR-SRV ens33  |  192.168.3.30/27  |  192.168.3.1  |
 
 
-
 > [!WARNING]
-> Настройка ISP проводится в следующем отдельном пункте, но указываем IP-адреса ISP в таблицу\
+> Настройка ISP проводится в следующем отдельном пункте, но указываем IP-адреса в таблицу для отчёта\
 > Для HQ-RTR, HQ-SRV, HQ-CLI и BR-RTR IP-адреса связанные с VLAN устанавливаем в пункте с настройкой виртуального коммутатора
+
+
+
+Узнаем MAC-адреса маршутизаторов, для подключения через графический интерфейс.
+
+![{835E93B1-6D16-4092-9D20-F83DEF4FD1E7}](https://github.com/user-attachments/assets/81e1fa9b-6fe9-41a1-a880-3505827c9c25)\
+**Рисунок 3**
+
+![{A91A916F-F875-40E0-93AD-428FB5616221}](https://github.com/user-attachments/assets/3030f19f-38d0-4fb7-9ad8-4a9826471c6d)\
+**Рисунок 4 - окно входа**
+
+При первом подключение к Микротику пароль не требуется, но для использования терминала потребуется установить пароль
+
+![{362CBBA7-DA8D-4EEC-A316-68CB9809DD63}](https://github.com/user-attachments/assets/75db4935-759b-4996-ae49-74953079d7d6)\
+**Рисунок 5**
+
+Теперь устанавливаем IP-адреса для маршутизаторов
+
+Для HQ-RTR\
+![{B25E7E4C-C6A5-4C06-B021-61057047D616}](https://github.com/user-attachments/assets/0ba8d36c-9867-4270-8562-cc2488d354b9)\
+**Рисунок 6**
+
+Командой
+```
+ip/address/add address=172.16.4.2/28 network=172.16.4.0 interface=ether1
+```
+
+BR-RTR\
+![{A4E10ED6-56FF-45F9-996E-7A47004495F9}](https://github.com/user-attachments/assets/e04cc1f3-4201-4960-a447-f35fb15d8ce9)\
+**Рисунок 7**
+
+Командами
+```
+ip/address/add address=172.16.5.2/28 network=172.16.5.0 interface=ether1
+ip/address/add address=192.168.3.1/27 network=192.168.3.0 interface=ether2
+```
+
+Изменяем имя маршутизаторов\
+![{3B435704-FC83-47DA-9DBD-5BB9ECD79CF2}](https://github.com/user-attachments/assets/bc30c7b2-c93f-4639-89b0-963038f8a306)\
+**Рисунок 8**
+
+Командой
+```
+system/identity/set name=HQ-RTR.au-team.irpo
+```
+
+Для BR-SRV
+```
+sudo apt install network-manager
+nmtui
+ip -c a 
+```
+![{16DD9159-44BD-4EB9-9BAA-378B7650A6E5}](https://github.com/user-attachments/assets/18267998-d8ce-4d63-a0e0-eaf68cc213f9)\
+**Рисунок 9 - nmtui**
+
+![{E6C1803A-1580-438B-8D26-E4D241BA4B77}](https://github.com/user-attachments/assets/1073a629-d51d-43b6-af61-0114d5bfdf3c)\
+**Рисунок 10 - IP-адрес**
+
+
+Изменяем имя виртуальной машины
+```
+sudo hostnamectl set-hostname BR-SRV.au-team.irpo
+sudo reboot
+```
+
+
+Также вносим изменение в файл /etc/hosts, для коректной работы
+```
+sudo nano /etc/hosts
+127.0.1.1  ISP  BR-SRV.au-team.irpo
+ctrl+x
+y
+enter
+```
+![{FD805E78-E06E-4F2D-A5AB-E256971D828C}](https://github.com/user-attachments/assets/5387a946-1ca5-4ed0-a014-610ca0b671fd)\
+**Рисунок 11**
+
 
 ### 2. Конфигурация ISP
 
@@ -175,6 +251,56 @@ sudo apt install iptables-persistent
 
 
 ### 4. Виртуальный коммутатор HQ
+
+Создаём подинтерфесы для ether2 и ether3
+![{12339338-5674-4BAE-81CB-7986E31AD72F}](https://github.com/user-attachments/assets/e2477e86-2605-47c8-b76c-46c1547e0120)\
+**Рисунок**
+
+Командами 
+```
+interface/vlan/add name=vlan100 vlan-id=100 interface=ether2
+interface/vlan/add name=vlan200 vlan-id=200 interface=ether2
+interface/vlan/add name=vlan999 vlan-id=999 interface=ether3
+```
+
+Указываем IP-адреса для созданных подинтерфейсов
+
+![{BDBABCED-39CD-48FA-BF40-2FF3F5790E72}](https://github.com/user-attachments/assets/5d936cd8-a2c8-4913-aa05-e870e24cadd7)\
+**Рисунок**
+
+Командами
+```
+ip/address/add address=192.168.1.2/26 network=192.168.1.0 interface=vlan100
+ip/address/add address=192.168.2.1/28 network=192.168.2.0 interface=vlan200
+ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
+```
+
+На BR-RTR
+![{FC4934E3-EC58-4C7D-AB04-207E9264B02F}](https://github.com/user-attachments/assets/4de4628e-14a4-4ce0-991b-b8a9444ab0f1)\
+**Рисунок**
+
+Командой
+```
+ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
+```
+
+> [!WARNING]
+> Данный выполняется после того как было настроенно на обоих маршутизаторах и 
+
+
+Переходим к настройке IP-адресов на HQ-SRV
+```
+sudo apt install network-manager
+nmtui
+ip -c a 
+```
+![{16649FED-EEA4-4FE9-B94E-03F996C634A3}](https://github.com/user-attachments/assets/c9df01b0-2813-47da-bead-a08b00e101b1)\
+**Рисунок - nmtui**
+
+![{9CA78156-514A-42A2-A164-5812E6C69CC8}](https://github.com/user-attachments/assets/71d69127-dcba-4e0e-9cc2-6a272522986f)\
+**Рисунок - IP-адрес**
+
+
 ### 5. Удаленный доступ sshd (openssh-server)
 ### 6. Туннель
 ### 7. Динамическая маршрутизация (OSPF)
