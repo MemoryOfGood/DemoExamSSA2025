@@ -307,6 +307,10 @@ ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 
 После чего теперь в программе winbox можно будет подключаться через сеть управления указывая IP-адрес 
 
+![{46A5F906-650E-4CDD-B2D9-776B66097934}](https://github.com/user-attachments/assets/88136d3d-b8f8-4221-ab7b-9448efb0a614)\
+**Рисунок**
+
+
 Переходим к настройке IP-адресов на HQ-SRV
 ```
 sudo apt install network-manager
