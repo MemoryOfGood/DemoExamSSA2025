@@ -110,7 +110,7 @@ sudo apt update
 
 > [!WARNING]
 > Настройка ISP проводится в следующем отдельном пункте, но указываем IP-адреса в таблицу для отчёта\
-> Для HQ-RTR, HQ-SRV, HQ-CLI и BR-RTR IP-адреса связанные с VLAN устанавливаем в пункте с настройкой виртуального коммутатора
+> Для HQ-RTR, HQ-SRV, HQ-CLI и BR-RTR IP-адреса связанные с VLAN устанавливаем в пункте с настройкой виртуального коммутатора и DHCP-сервера
 
 
 
@@ -521,9 +521,12 @@ ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28
 sudo apt update
 sudo apt install bind9 -y
 ```
-После чего ставим IP-адрес HQ-SRV (или 127.0.0.1) и уквзываем домен\
+После чего ставим IP-адрес HQ-SRV (или 127.0.0.1) и указываем домен\
 ![изображение](https://github.com/user-attachments/assets/f546537b-f115-45d9-8bf4-536858ce468d)\
 **Рисунок 43**
+
+>[!NOTE]
+> Указываем данный ДНС-сервер и домен также на ISP, BR-SRV
 
 Запускаем и добавляет автозагрузка
 ```
@@ -614,21 +617,231 @@ system/clock/set time-zone-name=Asia/Irkutsk
 
 ## Модуль 2. Организация сетевого администрирования операционных систем
 ### 1. Доменный контролер Samba на HQ-SRV
+Временно указываем открытый ДНС-сервер например Яндекса (77.88.8.8), для того чтобы скачать пакеты свящанные с samba-ad-dc \
+![изображение](https://github.com/user-attachments/assets/27e531cc-b9a6-42d9-9df8-c556419765a0)\
+**Рисунок 49**
+
+Устанавливаем пакеты с samba-ad-dc
+```
+sudo apt update
+sudo apt install samba winbind libnss-winbind krb5-user smbclient ldb-tools python3-cryptography
+```
+
+Изменяем файл /etc/krb5.conf
+> [!WARNING]
+> Домен указывается ВЫСОКИМ РЕГИСТРОМ
+
+```
+sudo nano /etc/krb5.conf
+  default_realm = AU-TEAM.IRPO
+  dns_lookup_kdc = true
+  dns_lookup_realm = false
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/da65ae21-a9a2-41e8-b2c0-2695f3e6ebb0)\
+**Рисунок 50**
+
+Удаляем файл /etc/samba/smb.conf и останавливаем службы 
+```
+sudo rm -f /etc/samba/smb.conf
+sudo systemctl stop samba winbind nmbd smbd
+```
+Изменение роли на контролер домена
+```
+sudo samba-tool domain provision --realm=AU-TEAM.IRPO --domain AU-TEAM --server-role=dc
+```
+
+![изображение](https://github.com/user-attachments/assets/c8fd6994-fdc8-4c64-b4db-692a9f95a188)\
+**Рисунок 51 - удачная установка домена**
+
+Указываем пароль для администратора
+```
+sudo samba-tool user setpassword administrator
+```
+В файле /etc/samba/smb.conf указываем общедоступный ДНС в качестве сервера пересылки(Яндекс - 77.88.8.8) 
+```
+sudo nano /etc/samba/smb.conf
+  dns forwarder = 77.88.8.8
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/0f2dd8c2-99eb-4ec5-ad4e-4ef2505c1ec6)\
+**Рисунок 52**
+
+После чего ставим IP-адрес HQ-SRV (или 127.0.0.1) и указываем домен\
+![изображение](https://github.com/user-attachments/assets/f546537b-f115-45d9-8bf4-536858ce468d)\
+**Рисунок 53**
+
+Удаляем ненужный файл и создаём символьную ссылку
+```
+sudo rm -f /var/lib/samba/private/krb5.conf
+sudo ln -s /etc/krb5.conf /var/lib/samba/private/krb5.conf
+```
+
+Активируем службу samba-ad-dc чтобы включалась вместе с машиной
+```
+sudo systemctl disable samba winbind nmbd smbd
+sudo systemctl unmask samba-ad-dc
+sudo systemctl enable samba-ad-dc
+```
+
+Перезапускаем машину и проверяем работу
+```
+kinit administrator
+klist
+```
+![изображение](https://github.com/user-attachments/assets/ff963a29-45a6-44a0-9dc6-cddb32207575)\
+**Рисунок 54**
+
+Создаём пользователей user№.hq и вводим пароля
+```
+sudo samba-tool user create user1.hq
+sudo samba-tool user create user2.hq
+sudo samba-tool user create user3.hq
+sudo samba-tool user create user4.hq
+sudo samba-tool user create user5.hq
+```
+Создаем группу и добавлем туда пользователей
+```
+samba-tool group add hq
+samba-tool group addmembers hq user1.hq
+samba-tool group addmembers hq user2.hq
+samba-tool group addmembers hq user3.hq
+samba-tool group addmembers hq user4.hq
+samba-tool group addmembers hq user5.hq
+```
+
+Настройка для ввода машины HQ-CLI в домен AU-TEAM.IRPO
+```
+sudo apt install sssd-ad sssd-tools realmd adcli
+sudo realm -v discover HQ-SRV.au-team.irpo
+sudo realm join -v HQ-SRV.au-team.irpo
+```
+
+> [!IMPORTANT]
+> Данное заание будет дополненно позже
+
+
 ### 2*. DNS-сервер на HQ-SRV (BIND-DLZ)
 > [!IMPORTANT]
 > ИМХО Этот пункт должен находится здесь, так как настройка DNS сервера при наличии и отсуствии доменного контролера сильно различается
+
+Перевод с SAMBA-INTERNAL на BIND-DLZ
+```
+sudo apt install bind9 -y
+```
+
+Редактируем файл /etc/bind/named.conf.options
+```
+sudo nano /etc/bind/named.conf.options
+  forwarders { 77.88.8.8;};
+  allow-query {  any;};
+  dnssec-validation no;
+  auth-nxdomain no;
+  tkey-gssapi-keytab "/var/lib/samba/bind-dns/dns.keytab";sev
+  minimal-responses yes;
+ctrl+z
+y
+enter
+```
+
+![изображение](https://github.com/user-attachments/assets/fc17b45f-4188-4cd5-9f70-caea96d0c495)\
+**Рисунок 55**
+
+Редактируем файл /etc/bind/named.conf.local
+```
+sudo nano /etc/bind/named.conf.local
+dlz "au-team.irpo" {
+  database "dlopen /usr/lib/x86_64-linux-gnu/samba/bind9/dlz_bind9_18.so";
+};
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/15850bb5-624a-4a33-9300-9b1d1bfe4407)\
+**Рисунок 56**
+
+Изменяем файл /etc/default/named
+```
+sudo nano /etc/default/named
+OPTIONS="-4 -u bind"
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/26c69cec-6402-4fb5-bc0c-28d618812002)\
+**Рисунок 57**
+
+Изменяем параметр в файле /etc/samba/smb.conf, чтобы за ДНС-сервер отвечал bind9
+```
+sudo nano /etc/samba/smb.conf
+server services = -dns
+# dns forwarder = 77.88.8.8
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/d37fa431-24ce-48cd-95b7-dbf3fd2abf11)\
+**Рисунок 58**
+
+Создаём папку для ДНС-сервера и переключаем режим на BIND9_DLZ
+```
+sudo mkdir /var/lib/samba/bind-dns/dns
+samba_upgradedns --dns-backend=BIND9_DLZ
+```
+![изображение](https://github.com/user-attachments/assets/3e7007ce-47b6-41e7-a976-171277c25dbf)\
+**Рисунок 59 - обновление ДНС**
+
+Создаём обратную зону и перезапускаем для активации её
+```
+sudo samba-tool dns zonecreate localhost 168.192.in-addr.arpa -U administrator
+sudo systemct restart samba-ad-dc bind9 
+```
+> [!NOTE]
+> Запись A для HQ-SRV автоматически создаются
+
+Добавляем записи
+```
+#HQ-SRV
+sudo samba-tool dns add localhost 168.192.in-addr.arpa 62.1 PTR HQ-SRV.au-team.irpo -U administrator
+
+#HQ-RTR
+sudo samba-tool dns add localhost au-team.irpo HQ-RTR A 192.168.1.1 -U administrator
+sudo samba-tool dns add localhost au-team.irpo HQ-RTR A 192.168.2.1 -U administrator
+sudo samba-tool dns add localhost 168.192.in-addr.arpa 1.1 PTR HQ-RTR.au-team.irpo -U administrator
+sudo samba-tool dns add localhost 168.192.in-addr.arpa 1.2 PTR HQ-RTR.au-team.irpo -U administrator
+
+#HQ-CLI
+sudo samba-tool dns add localhost au-team.irpo HQ-CLI A 192.168.2.14 -U administrator
+sudo samba-tool dns add localhost 168.192.in-addr.arpa 14.2 PTR HQ-CLI.au-team.irpo -U administrator
+
+#BR-RTR
+sudo samba-tool dns add localhost au-team.irpo BR-RTR A 192.168.3.1 -U administrator
+
+#BR-SRV
+sudo samba-tool dns add localhost au-team.irpo BR-SRV A 192.168.3.30 -U administrator
+
+#ISP
+sudo samba-tool dns add localhost au-team.irpo ISP A 172.16.4.1 -U administrator
+sudo samba-tool dns add localhost au-team.irpo ISP A 172.16.5.1 -U administrator
+sudo samba-tool dns add localhost au-team.irpo wiki CNAME ISP.au-team.irpo -U administrator
+sudo samba-tool dns add localhost au-team.irpo moodle CNAME ISP.au-team.irpo -U administrator
+```
 
 **Таблица 4**
 |  Устройство  |  Запись  |  Тип   |
 |  :---:  |  ---  |  :---:  |
 |  HQ-RTR  |  hq-rtr.au-team.irpo  |  A,PTR  |
+|  HQ-CLI  |  hq-cli.au-team.irpo  |  A,PTR  |
 |  BR-RTR  |  br-rtr.au-team.irpo  |  A  |
 |  BR-SRV  |  br-srv.au-team.irpo  |  A  |
+|  ISP  |  isp.au-team.irpo  |  A  |
 |  ISP  |  moodle.au-team.irpo  |  CNAME  |
 |  ISP  |  wiki.au-team.irpo  |  CNAME  |
 
-> [!NOTE]
-> Записи  A, PTR для HQ-SRV и HQ-CLI автоматически создаются, для HQ-SRV после развертывания домена, а для HQ-CLI после ввода машины в домен  
 
 ### 3. Сетевое файлое хранилище (NFS сервер)
 ``` 
