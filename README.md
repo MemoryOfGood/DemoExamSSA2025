@@ -720,6 +720,9 @@ sudo apt install sssd-ad sssd-tools realmd adcli
 sudo realm -v discover HQ-SRV.au-team.irpo
 sudo realm join -v HQ-SRV.au-team.irpo
 ```
+![изображение](https://github.com/user-attachments/assets/6c8ab7c5-406d-478a-bb91-e739fed59c7c)
+**Рисунок 55 - Машина удачно добавленна в домен**
+
 
 > [!IMPORTANT]
 > Данное заание будет дополненно позже
@@ -729,7 +732,8 @@ sudo realm join -v HQ-SRV.au-team.irpo
 > [!IMPORTANT]
 > ИМХО Этот пункт должен находится здесь, так как настройка DNS сервера при наличии и отсуствии доменного контролера сильно различается
 
-Перевод с SAMBA-INTERNAL на BIND-DLZ
+Перевод с SAMBA-INTERNAL на BIND-DLZ\
+Устанавливаем bind9
 ```
 sudo apt install bind9 -y
 ```
@@ -749,7 +753,7 @@ enter
 ```
 
 ![изображение](https://github.com/user-attachments/assets/fc17b45f-4188-4cd5-9f70-caea96d0c495)\
-**Рисунок 55**
+**Рисунок 56**
 
 Редактируем файл /etc/bind/named.conf.local
 ```
@@ -762,7 +766,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/15850bb5-624a-4a33-9300-9b1d1bfe4407)\
-**Рисунок 56**
+**Рисунок 57**
 
 Изменяем файл /etc/default/named
 ```
@@ -773,7 +777,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/26c69cec-6402-4fb5-bc0c-28d618812002)\
-**Рисунок 57**
+**Рисунок 58**
 
 Изменяем параметр в файле /etc/samba/smb.conf, чтобы за ДНС-сервер отвечал bind9
 ```
@@ -785,7 +789,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/d37fa431-24ce-48cd-95b7-dbf3fd2abf11)\
-**Рисунок 58**
+**Рисунок 59**
 
 Создаём папку для ДНС-сервера и переключаем режим на BIND9_DLZ
 ```
@@ -793,7 +797,7 @@ sudo mkdir /var/lib/samba/bind-dns/dns
 samba_upgradedns --dns-backend=BIND9_DLZ
 ```
 ![изображение](https://github.com/user-attachments/assets/3e7007ce-47b6-41e7-a976-171277c25dbf)\
-**Рисунок 59 - обновление ДНС**
+**Рисунок 60 - обновление ДНС**
 
 Создаём обратную зону и перезапускаем для активации её
 ```
@@ -844,42 +848,75 @@ sudo samba-tool dns add localhost au-team.irpo moodle CNAME ISP.au-team.irpo -U 
 
 
 ### 3. Сетевое файлое хранилище (NFS сервер)
+> [!IMPORTANT]
+> Перед начало следует выключить и добавить 3 виртуальных жестких диска
+
+Добавим 3 виртуальных жестких дисках по 1 ГБ в VmWare Workstation для BR-SRV\
+Переходим "Edit virtual machine settings" > "Add.." > "Hard Disk"\
+![изображение](https://github.com/user-attachments/assets/b79d9ac1-a4ae-4f61-84fa-9c24287c14ee)\
+**Рисунок 61**
+
+Включаем и ставит пакет mdadm
 ``` 
-sudo apt install mdadm
-lsblk 
+sudo apt install mdadm -y
+```
+
+Просматриваем имеющийся диски и запоминаем их имена
+```
+lsblk
+```
+![изображение](https://github.com/user-attachments/assets/677a6e25-b792-41bf-9c29-a4ca35e08b9a)\
+**Рисунок 62 - список дисков**
+
+Создаём raid-массив и форматируем его в файловой системе ext4
+```
 sudo mdadm --create --verbose /dev/md0 --level=5 --raid-devices=3 /dev/sdb /dev/sdc /dev/sdd
 sudo mkfs.ext4 -F /dev/md0
+```
+Создаём папку и создаём точку подключения
+```
 sudo mkdir /raid5
 sudo mount /dev/md0 /raid5
 ```
-просмотр точек подключения
+Просмотр точек подключения
 ```
 df -h
 ```
+![изображение](https://github.com/user-attachments/assets/7479f413-bcac-43cf-81b0-18d7dc373095)\
+**Рисунок 63**
+
+Считываем характериски массиав и записываем в файл /etc/mdadm/mdadm.conf, чтобы массив автоматически подключался после перезагрузки 
 ```
 sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
 sudo update-initramfs -u
 sudo echo '/dev/md0 /raid5 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fstab
-``` 
+```
+
+Устанавливаем пакет nfs-kernel-server и запускаем его
 ```
 sudo apt install nfs-kernel-server -y 
 sudo systemctl start nfs-kernel-server
 sudo systemctl enable nfs-kernel-server
-
+```
+Создаём папку которая будет использоваться как сетевая папка и выдаём особые права
+```
 sudo mkdir -p /raid5/nfs
 sudo chown nobody:nogroup /raid5/nfs 
-sudo chmod 755 /raid5/nfs			
+sudo chmod 755 /raid5/nfs
+```
+
+Прописываем параметры для того что можно было подключится к сетевой папке и принимаем их
+```		
 sudo echo '/raid5/nfs 192.168.2.0/28(rw,sync,no_subtree_check)' | sudo tee -a /etc/exports
-```
-```
 sudo exportfs -a
 ```
+
+На HQ-CLI\
+Скачиваем пакет nfs-common и подключаем сетевую папку
 ```
 sudo apt install nfs-common -y 
 sudo mkdir /mnt/nfs
 sudo echo '192.168.3.30:/raid5/nfs /mnt/nfs nfs4 defaults,user,exec,_netdev 0 0' | sudo tee -a /etc/fstab
-```
-```
 sudo systemctl daemon-reload
 sudo mount -a
 ```
@@ -946,7 +983,9 @@ docker compose -f wiki.yml up
 ```
 
 ### 7. Статическая трансляция портов
-### 8. Сервис Moodle на HQ-SRV 
+### 8. Сервис Moodle на HQ-SRV
+> [!WARNING]
+> Задание будет переработано 
 
 ### 9. Обратный прокси-сервер (nginx) на ~~HQ-RTR~~ ISP
 ### 10. Яндекс Браузер
