@@ -63,6 +63,7 @@ sudo apt update
 
 Не обязательно, добавление репозиториев Яндекс браузера на HQ-CLI
 ```
+sudo apt install curl
 curl -fsSL https://repo.yandex.ru/yandex-browser/YANDEX-BROWSER-KEY.GPG | gpg --dearmor | sudo tee /usr/share/keyrings/yandex.gpg > /dev/null
 echo "deb [arch=amd64 signed-by=/usr/share/keyrings/yandex.gpg] http://repo.yandex.ru/yandex-browser/deb stable main" | sudo tee /etc/apt/sources.list.d/yandex-browser.list
 sudo apt update
@@ -247,7 +248,40 @@ sudo apt install iptables-persistent
 
 ### 3. Локальные учетные записи
 >[!NOTE]
+>Тут предоставленна настройка на HQ-RTR, но настройка индентична для BR-RTR
+
+Для HQ-RTR/BR-RTR\
+Переходим в "System" во вкладку "Users" 
+Создаем нового пользователя net_user\
+![изображение](https://github.com/user-attachments/assets/5b498467-9174-463a-9abb-093223206c39)\
+**Рисунок - создание пользователя**
+
+Командой 
+```
+/user/add name=net_admin group=full password="P@$$word"
+```
+
+>[!NOTE]
 >Тут предоставленна настройка на HQ-SRV, но настройка индентична для BR-SRV
+
+Для HQ-SRV/BR-SRV\
+Создаем пользователя, вводим пароль P@$$w0rd для него и добавляем в группу sudo.
+```
+sudo adduser sshuser -u 1010
+sudo usermod -aG sudo sshuser
+```
+
+Для испозьзования sudo без аунтификации переходим в файл sudoers и добавляем строчку в самом конце.
+```
+sudo visudo
+sshuser ALL=(ALL:ALL) NOPASSWD:ALL
+ctrl+z
+y
+enter
+```
+
+![изображение](https://github.com/user-attachments/assets/1eb79afb-127e-41c9-b401-14f707199156)\
+**Рисунок - sudoers**
 
 
 ### 4. Виртуальный коммутатор HQ
@@ -299,7 +333,7 @@ ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 ![{65500167-E544-4D7C-84BD-F7EF88A4BD7A}](https://github.com/user-attachments/assets/03dcf518-cdc7-4b61-8feb-bbb53553b223)\
 **Рисунок**
 
-Переходм в "Свойства",  "Настроить" во вкладку "Дополнительно"
+Переходим в "Свойства" > "Настроить" > "Дополнительно"
 Там выбираем параметр "VLAN ID" и указываем значение 999
 
 ![{5D297F7E-3D1F-47A1-8E2D-82D785C5C976}](https://github.com/user-attachments/assets/8c938d5f-0e42-4a34-b19f-f75b3d5de8ae)\
@@ -325,10 +359,157 @@ ip -c a
 
 
 ### 5. Удаленный доступ sshd (openssh-server)
+
+Устанавливаем openssh-server и переходим в файл sshd_config
+```
+sudo apt install openssh-server -y
+sudo nano /etc/ssh/sshd_config
+```
+
+Изменяем порт на 2025, ограничиваем количество попыток до двух (MaxAuthTries)
+```
+Port 2024
+MaxAuthTries 2
+```
+![изображение](https://github.com/user-attachments/assets/e86aabc5-de61-4be3-804c-a0a04897ef53)
+**Рисунок**
+
+Добавляем параметр AllowUsers sshuser, чтобы запретить вход с других пользователей, кроме sshuser
+```
+AllowUsers sshuser
+```
+
+![изображение](https://github.com/user-attachments/assets/187634c5-2f81-4cfc-a5ca-f08c05c3a5f7)
+**Рисунок**
+
+Сохранаяем 
+```
+ctrl+z
+y
+enter
+```
+И перезагружаем службу sshd
+```
+sudo systemctl restart sshd
+```
 ### 6. Туннель
+> [!NOTE]
+> Настройка будет происходить одновременно на двух маршрутизаторах
+
+Переходим в "Interfaces" > "GRE Tunnel" и создаём на новый туннель.\
+На HQ-RTR\
+![изображение](https://github.com/user-attachments/assets/03f8b823-32f5-4e15-9876-2c20b9ca8145)\
+**Рисунок**
+
+На BR-RTR\
+![изображение](https://github.com/user-attachments/assets/70c73afb-fffb-468f-9a44-62fa1a5e66ee)\
+**Рисунок**
+
+Командами\
+Для HQ-RTR\
+```
+interface/gre/add name=HQ-BR local-address=172.16.4.2 remote-address=172.16.5.2 allow-fast-path=no ipsec-secret="P@$$w0rd"
+```
+Для BR-RTR\
+```
+interface/gre/add name=BR-HQ local-address=172.16.5.2 remote-address=172.16.4.2 allow-fast-path=no ipsec-secret="P@$$w0rd"
+```
+
+Устанавливаем IP-адрес для GRE-туннеля\
+Для HQ-RTR\
+![изображение](https://github.com/user-attachments/assets/d4178b69-186f-4f2f-80db-71ab327a0fa2)\
+**Рисунок**
+
+Для BR-RTR\
+![изображение](https://github.com/user-attachments/assets/d13d3c76-dcc1-4305-bfb1-1b4cd6ef5016)\
+**Рисунок**
+
+Командами\
+Для HQ-RTR
+```
+ip/address/add address=10.10.10.1/30 network=10.10.10.0 interface=HQ-BR
+```
+Для BR-RTR
+```
+ip/address/add address=10.10.10.2/30 network=10.10.10.0 interface=BR-HQ
+```
+
 ### 7. Динамическая маршрутизация (OSPF)
+>[!NOTE]
+> Настройка индетнична для HQ-RTR и BR-RTR
+
+Переходим в "Routing" > "OSPF"\
+Создаём "Instances"\
+![изображение](https://github.com/user-attachments/assets/66a4bb20-6bae-464b-a6ee-38dab3c434be)\
+**Рисунок**
+
+Создаём "Area"\
+![изображение](https://github.com/user-attachments/assets/555832f0-ddba-405d-83ec-c58464a1b309)\
+**Рисунок**
+
+Создаём "Interfaces Templates"\
+![изображение](https://github.com/user-attachments/assets/7c36610c-5e77-436e-bbdd-e49076d32fb6)\
+**Рисунок**
+
+Командами
+```
+routing/ospf/instance/add
+routing/ospf/area/add area-id=10.10.10.0 instance=ospf-instance-1
+routing/ospf/interface-template/add area=ospf-area-1 networks="10.10.10.0/30, 192.168.1.0/26, 192.168.2.0/28, 192.168.3.0/27"
+```
+
 ### 8. Динамическая трансляция адресов (NAT)
+>[!NOTE]
+> Настройка индетнична для HQ-RTR и BR-RTR
+
+Переходим в "IP", в раздел "Firewall", во вкладку "NAT" и создаём правило\
+![изображение](https://github.com/user-attachments/assets/9ebaf955-3da8-45b8-b787-654aa29477de)\
+**Рисунок**
+
+![изображение](https://github.com/user-attachments/assets/4202a80b-c9a1-412f-913c-5ee1084eddd3)\
+**Рисунок**
+
+
+Командой
+```
+ip/firewall/nat/add chain=srcnat action=masquerade
+```
+
 ### 9. DHCP-сервер на HQ-RTR
+Переходим в "IP" > "Pool" и создаём пул адресов\
+![изображение](https://github.com/user-attachments/assets/1335a3ba-da09-4894-98a9-4ce78578d602)\
+**Рисунок**
+
+Командой
+```
+ip/pool/add name=hq-pool ranges="192.168.2.2-192.168.2.14"
+```
+
+После чего переходим в "IP" > "DHCP Server" > "DHCP "и создаем сервер, указывая интерфейс vlan200 и пул hq-pool\
+![изображение](https://github.com/user-attachments/assets/0dcb139b-ea52-4d09-9c73-fb9f3657940b)\
+**Рисунок**
+```
+ip/dhcp-server/add name=dhcp-server interface=vlan200 address-pool=hq-pool
+```
+
+Переоходим в соседнюю вкладку "Network" и указываем параметры для DHCP сервера\
+Параметры "DNS Server" и "Domain" можно заполнить заранее\
+![изображение](https://github.com/user-attachments/assets/f90c1cc7-7fda-43e3-9d44-17badb004d00)
+
+**Рисунок**
+
+Командой
+```
+ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28 dns-server=192.168.1.62 domain="au-team.irpo"
+```
+
+Переходим к HQ-CLI и настраиваем DHCP-клиент на нём\
+![изображение](https://github.com/user-attachments/assets/12f2dd54-5ebc-45b7-b2df-cbcc27795746)\
+**Рисунок**
+
+
+
+
 ### 10*. DNS-сервер на HQ-SRV (BIND9)
 > [!IMPORTANT]
 > Вариант настройки без использования доменного контролера Samba и модуля BIND-DLZ\
