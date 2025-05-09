@@ -117,7 +117,7 @@ sudo apt update
 Узнаем MAC-адреса маршутизаторов, для подключения через графический интерфейс.
 
 ![{835E93B1-6D16-4092-9D20-F83DEF4FD1E7}](https://github.com/user-attachments/assets/81e1fa9b-6fe9-41a1-a880-3505827c9c25)\
-**Рисунок 3**
+**Рисунок 3 - MAC-адрес**
 
 ![{A91A916F-F875-40E0-93AD-428FB5616221}](https://github.com/user-attachments/assets/3030f19f-38d0-4fb7-9ad8-4a9826471c6d)\
 **Рисунок 4 - окно входа**
@@ -206,7 +206,7 @@ y
 enter
 ```
 ![hosts](https://github.com/user-attachments/assets/cef966ec-3287-4b75-b2ee-ce065f76a356)\
-**Рисунок  - /etc/hosts**
+**Рисунок 12 - /etc/hosts**
 
 Устанавливаем Network-Manager, указываем IP адреса и проверяем их
 ```
@@ -216,11 +216,11 @@ ip -c a
 ```
 
 ![nmtui](https://github.com/user-attachments/assets/a14fd562-c0f9-43c0-9d45-f465b997067d)\
-**Рисунок  - nmtui**
+**Рисунок 13 - nmtui**
 
 
 ![Адреса](https://github.com/user-attachments/assets/0d1d7a1e-dba5-4b0f-a9d4-6a214ce42e29)\
-**Рисунок  - IP адреса ISP**
+**Рисунок 14 - IP адреса ISP**
 
 Устанавливаем iptables и настраиваем маршутизацию из внешной сети 
 ```
@@ -239,7 +239,7 @@ enter
 ```
 
 ![ip_forward](https://github.com/user-attachments/assets/a6ac726e-434b-4faa-ae87-b5db2d3391a3)\
-**Рисунок**
+**Рисунок 15**
 
 Cохраняем правило для iptables 
 ```
@@ -254,7 +254,7 @@ sudo apt install iptables-persistent
 Переходим в "System" во вкладку "Users" 
 Создаем нового пользователя net_user\
 ![изображение](https://github.com/user-attachments/assets/5b498467-9174-463a-9abb-093223206c39)\
-**Рисунок - создание пользователя**
+**Рисунок 16- создание пользователя**
 
 Командой 
 ```
@@ -281,14 +281,14 @@ enter
 ```
 
 ![изображение](https://github.com/user-attachments/assets/1eb79afb-127e-41c9-b401-14f707199156)\
-**Рисунок - sudoers**
+**Рисунок 17 - sudoers**
 
 
 ### 4. Виртуальный коммутатор HQ
 
 Создаём подинтерфесы для ether2 и ether3
 ![{12339338-5674-4BAE-81CB-7986E31AD72F}](https://github.com/user-attachments/assets/e2477e86-2605-47c8-b76c-46c1547e0120)\
-**Рисунок**
+**Рисунок 18**
 
 Командами 
 ```
@@ -300,7 +300,7 @@ interface/vlan/add name=vlan999 vlan-id=999 interface=ether3
 Указываем IP-адреса для созданных подинтерфейсов
 
 ![{BDBABCED-39CD-48FA-BF40-2FF3F5790E72}](https://github.com/user-attachments/assets/5d936cd8-a2c8-4913-aa05-e870e24cadd7)\
-**Рисунок**
+**Рисунок 19**
 
 Командами
 ```
@@ -312,7 +312,7 @@ ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 На BR-RTR
 
 ![{FC4934E3-EC58-4C7D-AB04-207E9264B02F}](https://github.com/user-attachments/assets/4de4628e-14a4-4ce0-991b-b8a9444ab0f1)\
-**Рисунок**
+**Рисунок 20**
 
 Командой
 ```
@@ -325,24 +325,24 @@ ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 Переходим в "настройку Виртуальных сетей" у VMware, изменяем IP-адрес и маску, и убираем галочку с работой DHCP-сервера
 
 ![{E85B35AA-B4B8-4776-9A7A-80EB8C67988A}](https://github.com/user-attachments/assets/9a0672ee-ca85-4e67-98c9-de24e6a7aaa2)\
-**Рисунок**
+**Рисунок 21**
 
 После чего переходим к настройке адаптеров в "Панель управления"
 Выбираем "VMware Network Adapter VMnet1"
 
 ![{65500167-E544-4D7C-84BD-F7EF88A4BD7A}](https://github.com/user-attachments/assets/03dcf518-cdc7-4b61-8feb-bbb53553b223)\
-**Рисунок**
+**Рисунок 22**
 
 Переходим в "Свойства" > "Настроить" > "Дополнительно"
 Там выбираем параметр "VLAN ID" и указываем значение 999
 
 ![{5D297F7E-3D1F-47A1-8E2D-82D785C5C976}](https://github.com/user-attachments/assets/8c938d5f-0e42-4a34-b19f-f75b3d5de8ae)\
-**Рисунок**
+**Рисунок 22**
 
 После чего теперь в программе winbox можно будет подключаться через сеть управления указывая IP-адрес 
 
 ![{46A5F906-650E-4CDD-B2D9-776B66097934}](https://github.com/user-attachments/assets/88136d3d-b8f8-4221-ab7b-9448efb0a614)\
-**Рисунок**
+**Рисунок 24**
 
 
 Переходим к настройке IP-адресов на HQ-SRV
@@ -352,10 +352,10 @@ nmtui
 ip -c a 
 ```
 ![{16649FED-EEA4-4FE9-B94E-03F996C634A3}](https://github.com/user-attachments/assets/c9df01b0-2813-47da-bead-a08b00e101b1)\
-**Рисунок - nmtui**
+**Рисунок 25 - nmtui**
 
 ![{9CA78156-514A-42A2-A164-5812E6C69CC8}](https://github.com/user-attachments/assets/71d69127-dcba-4e0e-9cc2-6a272522986f)\
-**Рисунок - IP-адрес**
+**Рисунок 26 - IP-адрес**
 
 
 ### 5. Удаленный доступ sshd (openssh-server)
@@ -371,16 +371,16 @@ sudo nano /etc/ssh/sshd_config
 Port 2024
 MaxAuthTries 2
 ```
-![изображение](https://github.com/user-attachments/assets/e86aabc5-de61-4be3-804c-a0a04897ef53)
-**Рисунок**
+![изображение](https://github.com/user-attachments/assets/e86aabc5-de61-4be3-804c-a0a04897ef53)\
+**Рисунок 27**
 
 Добавляем параметр AllowUsers sshuser, чтобы запретить вход с других пользователей, кроме sshuser
 ```
 AllowUsers sshuser
 ```
 
-![изображение](https://github.com/user-attachments/assets/187634c5-2f81-4cfc-a5ca-f08c05c3a5f7)
-**Рисунок**
+![изображение](https://github.com/user-attachments/assets/187634c5-2f81-4cfc-a5ca-f08c05c3a5f7)\
+**Рисунок 28**
 
 Сохранаяем 
 ```
@@ -399,11 +399,11 @@ sudo systemctl restart sshd
 Переходим в "Interfaces" > "GRE Tunnel" и создаём на новый туннель.\
 На HQ-RTR\
 ![изображение](https://github.com/user-attachments/assets/03f8b823-32f5-4e15-9876-2c20b9ca8145)\
-**Рисунок**
+**Рисунок 29**
 
 На BR-RTR\
 ![изображение](https://github.com/user-attachments/assets/70c73afb-fffb-468f-9a44-62fa1a5e66ee)\
-**Рисунок**
+**Рисунок 30**
 
 Командами\
 Для HQ-RTR\
@@ -418,11 +418,11 @@ interface/gre/add name=BR-HQ local-address=172.16.5.2 remote-address=172.16.4.2 
 Устанавливаем IP-адрес для GRE-туннеля\
 Для HQ-RTR\
 ![изображение](https://github.com/user-attachments/assets/d4178b69-186f-4f2f-80db-71ab327a0fa2)\
-**Рисунок**
+**Рисунок 31**
 
 Для BR-RTR\
 ![изображение](https://github.com/user-attachments/assets/d13d3c76-dcc1-4305-bfb1-1b4cd6ef5016)\
-**Рисунок**
+**Рисунок 32**
 
 Командами\
 Для HQ-RTR
@@ -441,15 +441,15 @@ ip/address/add address=10.10.10.2/30 network=10.10.10.0 interface=BR-HQ
 Переходим в "Routing" > "OSPF"\
 Создаём "Instances"\
 ![изображение](https://github.com/user-attachments/assets/66a4bb20-6bae-464b-a6ee-38dab3c434be)\
-**Рисунок**
+**Рисунок 33**
 
 Создаём "Area"\
 ![изображение](https://github.com/user-attachments/assets/555832f0-ddba-405d-83ec-c58464a1b309)\
-**Рисунок**
+**Рисунок 34**
 
 Создаём "Interfaces Templates"\
 ![изображение](https://github.com/user-attachments/assets/7c36610c-5e77-436e-bbdd-e49076d32fb6)\
-**Рисунок**
+**Рисунок 35**
 
 Командами
 ```
@@ -464,10 +464,10 @@ routing/ospf/interface-template/add area=ospf-area-1 networks="10.10.10.0/30, 19
 
 Переходим в "IP", в раздел "Firewall", во вкладку "NAT" и создаём правило\
 ![изображение](https://github.com/user-attachments/assets/9ebaf955-3da8-45b8-b787-654aa29477de)\
-**Рисунок**
+**Рисунок 36**
 
 ![изображение](https://github.com/user-attachments/assets/4202a80b-c9a1-412f-913c-5ee1084eddd3)\
-**Рисунок**
+**Рисунок 37**
 
 
 Командой
@@ -478,7 +478,7 @@ ip/firewall/nat/add chain=srcnat action=masquerade
 ### 9. DHCP-сервер на HQ-RTR
 Переходим в "IP" > "Pool" и создаём пул адресов\
 ![изображение](https://github.com/user-attachments/assets/1335a3ba-da09-4894-98a9-4ce78578d602)\
-**Рисунок**
+**Рисунок 38**
 
 Командой
 ```
@@ -487,7 +487,7 @@ ip/pool/add name=hq-pool ranges="192.168.2.2-192.168.2.14"
 
 После чего переходим в "IP" > "DHCP Server" > "DHCP "и создаем сервер, указывая интерфейс vlan200 и пул hq-pool\
 ![изображение](https://github.com/user-attachments/assets/0dcb139b-ea52-4d09-9c73-fb9f3657940b)\
-**Рисунок**
+**Рисунок 38**
 ```
 ip/dhcp-server/add name=dhcp-server interface=vlan200 address-pool=hq-pool
 ```
@@ -496,7 +496,7 @@ ip/dhcp-server/add name=dhcp-server interface=vlan200 address-pool=hq-pool
 Параметры "DNS Server" и "Domain" можно заполнить заранее\
 ![изображение](https://github.com/user-attachments/assets/f90c1cc7-7fda-43e3-9d44-17badb004d00)
 
-**Рисунок**
+**Рисунок 40**
 
 Командой
 ```
@@ -505,15 +505,80 @@ ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28
 
 Переходим к HQ-CLI и настраиваем DHCP-клиент на нём\
 ![изображение](https://github.com/user-attachments/assets/12f2dd54-5ebc-45b7-b2df-cbcc27795746)\
-**Рисунок**
-
-
-
+**Рисунок 41**
 
 ### 10*. DNS-сервер на HQ-SRV (BIND9)
 > [!IMPORTANT]
 > Вариант настройки без использования доменного контролера Samba и модуля BIND-DLZ\
 > Если хотите настроить DNS-сервер после доменного контролера, то переходите ко второму модулю.
+
+Временно указываем открытый ДНС-сервер например Яндекса (77.88.8.8), для того чтобы скачать пакет bind9\
+![изображение](https://github.com/user-attachments/assets/27e531cc-b9a6-42d9-9df8-c556419765a0)\
+**Рисунок 42**
+
+Скачиваем пакет bind9
+```
+sudo apt update
+sudo apt install bind9 -y
+```
+После чего ставим IP-адрес HQ-SRV (или 127.0.0.1) и уквзываем домен\
+![изображение](https://github.com/user-attachments/assets/f546537b-f115-45d9-8bf4-536858ce468d)\
+**Рисунок 43**
+
+Запускаем и добавляет автозагрузка
+```
+sudo systemctl start named
+sudo systemctl enable named
+```
+Редактируем файл /etc/bind/named.conf.options
+```
+sudo nano /etc/bind/named.conf.options
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/ca4a2df4-f887-47f0-8c38-ca914a56c802)\
+**Рисунок 44 - /etc/bind/named.conf.options**
+
+```
+sudo nano /etc/bind/named.conf.local
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/d6aff391-a236-43ee-a4e4-615fe37cda0d)\
+**Рисунок 45 - /etc/bind/named.conf.local**
+
+
+Копируем файлы c зонами localhost для того, чтобы на основе сделать новые две зоны: прямую и рекурсивную 
+```
+sudo cp /etc/bind/db.local /etc/bind/db.irpo
+sudo cp /etc/bind/db.127 /etc/bind/db.172
+```
+Редактируем файл под прямую зону 
+```
+sudo nano /etc/bind/db.irpo
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/56372b32-f51c-43da-99f8-b88933684b21)\
+**Рисунок 46 - db.irpo**
+
+И рекурсивную зону
+```
+sudo nano /etc/bind/db.127
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/8489a772-6f64-4de6-9540-02519ef0b3fb)\
+**Рисунок 47 - db.127**
+
+Перезапускаем ДНС-сервер
+```
+sudo systemctl restart named
+```
 
 **Таблица 3**
 |  Устройство  |  Запись  |  Тип   |
@@ -523,16 +588,29 @@ ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28
 |  HQ-CLI  |  hq-cli.au-team.irpo  |  A,PTR  |
 |  HQ-SRV  |  hq-srv.au-team.irpo  |  A,PTR  |
 |  BR-SRV  |  br-srv.au-team.irpo  |  A  |
+|  ISP  |  isp.au-team.irpo  |  A  |
 |  ISP  |  moodle.au-team.irpo  |  CNAME  |
 |  ISP  |  wiki.au-team.irpo  |  CNAME  |
 
 
-
-
 ### 11. Часовой пояс
 > [!TIP]
-> этот пукнт может быть выполнен при установки ОС
+> Этот пукнт может быть выполнен при установки ОС
+> Здесь часовой пояс указывается автора 
 
+Для ISP/HQ-SRV/HQ-CLI/BR-SRV
+```
+timedatectl set-timezone Asia/Irkutsk
+```
+Для HQ-RTR/BR-RTR
+Заходим в "System" > "Clock"\
+![изображение](https://github.com/user-attachments/assets/0fe62699-83f5-40a0-a900-e63eb589723e)\
+**Рисунок 48**
+
+Командой
+```
+system/clock/set time-zone-name=Asia/Irkutsk
+```
 
 ## Модуль 2. Организация сетевого администрирования операционных систем
 ### 1. Доменный контролер Samba на HQ-SRV
