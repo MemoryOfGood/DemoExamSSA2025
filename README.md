@@ -462,7 +462,7 @@ routing/ospf/interface-template/add area=ospf-area-1 networks="10.10.10.0/30, 19
 >[!NOTE]
 > Настройка индетнична для HQ-RTR и BR-RTR
 
-Переходим в "IP", в раздел "Firewall", во вкладку "NAT" и создаём правило\
+Переходим в "IP" > "Firewall" > "NAT" и создаём правило\
 ![изображение](https://github.com/user-attachments/assets/9ebaf955-3da8-45b8-b787-654aa29477de)\
 **Рисунок 36**
 
@@ -493,9 +493,7 @@ ip/dhcp-server/add name=dhcp-server interface=vlan200 address-pool=hq-pool
 ```
 
 Переоходим в соседнюю вкладку "Network" и указываем параметры для DHCP сервера\
-Параметры "DNS Server" и "Domain" можно заполнить заранее\
-![изображение](https://github.com/user-attachments/assets/f90c1cc7-7fda-43e3-9d44-17badb004d00)
-
+![изображение](https://github.com/user-attachments/assets/f90c1cc7-7fda-43e3-9d44-17badb004d00)\
 **Рисунок 40**
 
 Командой
@@ -720,7 +718,7 @@ sudo apt install sssd-ad sssd-tools realmd adcli
 sudo realm -v discover HQ-SRV.au-team.irpo
 sudo realm join -v HQ-SRV.au-team.irpo
 ```
-![изображение](https://github.com/user-attachments/assets/6c8ab7c5-406d-478a-bb91-e739fed59c7c)
+![изображение](https://github.com/user-attachments/assets/6c8ab7c5-406d-478a-bb91-e739fed59c7c)\
 **Рисунок 55 - Машина удачно добавленна в домен**
 
 
@@ -908,7 +906,19 @@ sudo chmod 755 /raid5/nfs
 Прописываем параметры для того что можно было подключится к сетевой папке и принимаем их
 ```		
 sudo echo '/raid5/nfs 192.168.2.0/28(rw,sync,no_subtree_check)' | sudo tee -a /etc/exports
-sudo exportfs -a
+sudo exportfs -rav
+```
+
+Настройка а BR-RTR\
+Выполняем проброс портов чтобы можно было подключиться по nfs к BR-SRV\
+Переходим в "IP" > "Firewall" > "NAT" и создаём два правила\
+![Безымянный](https://github.com/user-attachments/assets/b8ea7aa3-9bce-42e2-a66f-de4cf2b5acc7)\
+**Рисунок 64**
+
+Командой
+```
+ip/firewall/nat/add chain=dstnat action=dst-nat protocol=tcp port=2049 to-ports=2049
+ip/firewall/nat/add chain=dstnat action=dst-nat protocol=udp port=2049 to-ports=2049
 ```
 
 На HQ-CLI\
@@ -916,12 +926,142 @@ sudo exportfs -a
 ```
 sudo apt install nfs-common -y 
 sudo mkdir /mnt/nfs
-sudo echo '192.168.3.30:/raid5/nfs /mnt/nfs nfs4 defaults,user,exec,_netdev 0 0' | sudo tee -a /etc/fstab
+sudo echo '192.168.3.30:/raid5/nfs /mnt/nfs nfs defaults,user,exec,_netdev 0 0' | sudo tee -a /etc/fstab
 sudo systemctl daemon-reload
 sudo mount -a
 ```
 ### 4. Служба сетевого времени (NTP сервер)
+Устанавливаем пакет chrony на ISP\
+```
+sudo apt install chrony -y
+```
+
+Редактируем файл /etc/chrony/chrony.conf
+```
+sudo nano /etc/chrony/chrony.conf
+```
+Изменяем стандартный сервер на российские 
+![изображение](https://github.com/user-attachments/assets/b3f62a1f-1056-4051-a5c4-56654c11255a)\
+**Рисунок 65**
+```
+pool 0.ru.pool.ntp.org iburst
+pool 1.ru.pool.ntp.org iburst
+pool 2.ru.pool.ntp.org iburst
+pool 3.ru.pool.ntp.org iburst
+```
+и прописываем подсети с которых устройства могут подключаться к NTP-серверу\
+![изображение](https://github.com/user-attachments/assets/42977f02-2eb2-4a5a-a62d-90af613d1012)\
+**Рисунок 66**
+```
+allow 172.16.4.0/28
+allow 172.16.5.0/28
+allow 192.168.1.0/26
+allow 192.168.2.0/28
+allow 192.168.3.0/27
+local stratum 5
+```
+Сохраняем файл
+```
+ctrl+z
+y
+enter
+```
+Перезапускаем службу chrony
+```
+sudo systemctl restart chrony
+
+```
+Для HQ-RTR/BR-RTR\
+Сначало создадим правило для порта 123 для подключения к NTP-серверу\
+![Безымянный](https://github.com/user-attachments/assets/34f80d6e-57be-4f40-bcf3-83305ec00500)\
+**Рисунок 67**
+Командой 
+```
+ip/firewall/filter/add action=accept chain=input protocol=udp port=123
+```
+
+Переходим в "System" > "NTP Client" и выставляем ip-адрес ISP\
+![изображение](https://github.com/user-attachments/assets/bafd147e-6a16-4431-af8e-fe37ec32e068)\
+**Рисунок 67**
+Командой
+```
+system/ntp/client/servers/add address=172.16.4.1
+system/ntp/client/servers/add address=172.16.5.1
+system/ntp/client/edit enabled
+yes
+ctrl+o
+```
+>[!NOTE]
+> Синхронизация Микротиков с NTP-сервером может занимать несколько минут
+
+Для HQ-CLI/HQ-SRV/BR-SRV\
+Устанавливаем chrony
+```
+sudo apt install chrony -y
+```
+Редактируем файл /etc/chrony/chrony.conf, коментируем стандарный NTP-сервер и добавляем свой\ 
+```
+sudo nano /etc/chrony/chrony.conf
+pool ISP.au-team.irpo iburst
+ctrl+z
+y
+enter
+```
+![изображение](https://github.com/user-attachments/assets/ed860606-8387-4298-95e9-4a795bf4ab90)\
+**Рисунок 68**
+
+Перезапускаем службу chrony
+```
+sudo systemctl restart chrony
+```
 ### 5. Служба Ansible на BR-SRV
+> [!TIP]
+> для скачивания можно поменять на Мост/Bridged и после вернуть
+> sshpass для того чтобы можно было в файле пароль от sshuser для подключения
+
+Устанавливаем пакеты ansible и sshpass
+```
+sudo apt install ansible sshpass -y
+```
+
+Создаём папку /etc/ansible и файл hosts в ней же
+```
+sudo mkdir /etc/ansible
+sudo nano /etc/ansible/hosts
+```
+> [!NOTE]
+> Перед тем как указывать HQ-CLI стоит установаить openssh-server на нём
+
+В этом файле указываем три* машины (у микротиков другая файловая система, по этому ansible не будет отрабатывать на них)\
+```
+HQ-SRV ansible_user=sshuser ansible_port=2024 ansible_password=P@$$w0rd
+BR-SRV ansible_user=sshuser ansible_port=2024 ansible_password=P@$$w0rd
+HQ-CLI ansible_user=user ansible_password=1
+```
+Сохраняем файл
+```
+ctrl+z
+y
+enter
+```
+Создаём новый файл ansible.cfg 
+```
+sudo nano /etc/ansible/ansible.cfg
+[defaults]
+inventoty = /etc/ansible/hosts
+host_key_checking = false
+ctrl+z
+y
+enter
+```
+
+Проверяем работу с помощью ping-pong
+```
+ansible all -m ping
+```
+![изображение](https://github.com/user-attachments/assets/aca1aacf-b2ed-4d00-af26-b39e27d16f3e)\
+**Рисунок 69**
+
 ### 6. Docker compose на BR-SRV
 > [!TIP]
 > для скачивания можно поменять на Мост/Bridged и после вернуть
