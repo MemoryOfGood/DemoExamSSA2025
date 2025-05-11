@@ -30,7 +30,7 @@ deb http://security.debian.org/debian-security bookworm-security main non-free n
 sudo apt install network-manager -y
 ```
 > [!NOTE]
-> На время будут подключен в качестве сетевого адаптера Мост/Bridged на машинах для скачивания и проверки репозиториев
+> На время будут подключен в качестве сетевого адаптера NAT/Bridged на машинах для скачивания и проверки репозиториев
 
 
 Добавление [репозиториев Moodle](https://docs.moodle.org/405/en/Installing_Moodle_on_Debian_based_distributions) на HQ-SRV
@@ -1016,7 +1016,7 @@ sudo systemctl restart chrony
 ```
 ### 5. Служба Ansible на BR-SRV
 > [!TIP]
-> для скачивания можно поменять на Мост/Bridged и после вернуть
+> для скачивания можно поменять на NAT/Bridged, создать временное подключение в nmtui и после вернуть\
 > sshpass для того чтобы можно было в файле пароль от sshuser для подключения
 
 Устанавливаем пакеты ansible и sshpass
@@ -1064,7 +1064,9 @@ ansible all -m ping
 
 ### 6. Docker compose на BR-SRV
 > [!TIP]
-> для скачивания можно поменять на Мост/Bridged и после вернуть
+> для скачивания можно поменять адаптер на NAT/Bridged, создать временное подключение в nmtui и после чего убрать
+> во временном подключении стоит указать dns 8.8.8.8
+
 Устанавливаем Docker
 ```
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose docker-compose-plugin
@@ -1117,13 +1119,16 @@ sudo docker volume create --name=dbvolume
 sudo docker compose -f wiki.yml up
 ```
 
-На HQ-CLI c помощью браузера по адресу http://192.168.3.30:8080 или http://BR-SRV:8080
+> [!WARNING]
+> после того как собрался контейнер, удостоверьтесь что вернули адаптер и перезапустите его
+
+На HQ-CLI c помощью браузера по адресу http://192.168.3.30:8080 или http://BR-SRV.au-team.irpo:8080
 ![изображение](https://github.com/user-attachments/assets/84e67bd5-772e-45fe-956e-060519683972)\
 **Рисунок 70**
 
-Указываем\ 
+Заполняем\
 хост базы данных: mariadb\
-имя базы данных mediawiki\ 
+имя базы данных mediawiki\
 имя пользователя базы данных: wiki\
 пароль базы данных: WikiP@ssw0rd\
 ![изображение](https://github.com/user-attachments/assets/ca936c95-9f97-4cb4-99dc-b8d3a1d78eb3)\
@@ -1142,7 +1147,7 @@ sudo docker compose -f wiki.yml up
 ![изображение](https://github.com/user-attachments/assets/88fff5a6-5d6b-4260-bb41-214e39582242)\
 **Рисунок 75**
 
-Скачиваем файл и остправляем его по scp с HQ-CLI на BR-RTR\
+Скачиваем файл и остправляем его по scp с HQ-CLI на BR-SRV\
 ![изображение](https://github.com/user-attachments/assets/f0d0808d-53b5-493e-9bad-4823dca7a334)\
 **Рисунок 76**
 ```
@@ -1176,14 +1181,124 @@ sudo docker compose -f wiki.yml up
 
 ### 7. Статическая трансляция портов
 ### 8. Сервис Moodle на HQ-SRV
-> [!WARNING]
-> Задание будет обновленно под версию 5.0
+> [!NOTE]
+> Задание обновленно под версию 5.0
 
-### 9. Обратный прокси-сервер (nginx) на ~~HQ-RTR~~ ISP
+Устаналиваем пакеты
+```
+apt-get install apache2 php8.2 mariadb-server php8.2-mysql libapache2-mod-php8.2 php8.2-gd php8.2-curl php8.2-xmlrpc php8.2-xml php8.2-soap php8.2-intl php8.2-zip php8.2-mbstring
+```
+Редактируем файл nano /etc/php/8.2/apache2/php.ini, для удобства используйте ctrl+w для пойска необходимых строк
+```
+nano /etc/php/8.2/apache2/php.ini
+
+extension=mysql.so
+extension=gd.so
+
+memory_limit = 40M
+post_max_size = 80M
+upload_max_filesize = 80M
+max_input_vars=25000	
+
+ctrl+z
+y
+enter
+```
+
+Перезапускаем apache
+```
+sudo systemctl restart apache2
+```
+Устанавливаем пароль для администратора и входим в СУБД mariadb
+```
+sudo mysqladmin -u root password "P@$$w0rd"
+sudo mysql -u root -p
+```
+Создаём базу данных moodledb
+```
+CREATE DATABASE moodledb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+grant all privileges on moodledb.* to moodle@localhost identified by 'P@ssw0rd';
+flush privileges;
+exit;
+```
+Перезапускаем mariadb
+```
+sudo systemctl restart mariadb
+```
+> [!TIP]
+> для скачивания можно поменять адаптер на NAT/Bridged, создать временное подключение в nmtui и после чего убрать
+
+Скачиваем и распаковываем архив moodle
+```
+wget https://download.moodle.org/download.php/direct/stable500/moodle-latest-500.tgz
+tar -zxvf moodle-latest-500.tgz
+```
+Перемещаем папку и создаём необходимые директории
+```
+sudo mv moodle /var/www
+sudo mkdir /var/www/moodledata
+sudo chown -R www-data:www-data /var/www/moodle
+sudo chown -R www-data:www-data /var/www/moodledata
+sudo chmod -R 755 /var/www/moodledata
+sudo chmod -R 755 /var/www/moodle
+```
+Редактируем файл /etc/apache2/sites-available/000-default.conf
+```
+sudo nano nano /etc/apache2/sites-available/000-default.conf
+```
+Изменяем DocumentRoot "/var/www/html" на DocumentRoot "/var/www/moodle"
+```
+DocumentRoot "/var/www/moodle"
+```
+В конце файла добавляем 
+```
+<Directory "/var/www/moodle/">	 
+</Directory>
+```
+Перезапускаем apache2
+```
+sudo systemctl restart apache2
+```
+
+На HQ-CLI c помощью браузера по адресу http://192.168.1.62 или http://HQ-SRV.au-team.irpo\
+Выбираем язык - Русский (ru)\
+![изображение](https://github.com/user-attachments/assets/cadf1bd4-d973-4bb7-9e28-e939b0189906)\
+**Рисунок 80**
+
+Проверяем правильность путям к каталогам\
+![изображение](https://github.com/user-attachments/assets/1cc77094-1e14-4489-9419-b94ee08c9bbf)\
+**Рисунок 81**
+
+Устанавливаем драйвер базы данных MariaDB\
+![изображение](https://github.com/user-attachments/assets/b03cf66a-aad2-4d6f-9e22-89077e2c2515)\
+**Рисунок 82**
+
+Заполняем\
+Название базы данных: mariadb\
+Пользователь базы данных: moodle\
+Пароль: P@ssw0rd\
+![изображение](https://github.com/user-attachments/assets/87b977f5-9e5d-4499-ae0b-1a264b389f5e)\
+**Рисунок 83**
+
+![изображение](https://github.com/user-attachments/assets/0039d3b7-259a-459f-ae33-8123def2504c)\
+**Рисунок 84**
+
+Заполняем пароль P@ssw0rd и ставим часовой пояс\ 
+![изображение](https://github.com/user-attachments/assets/db7c9d20-0da7-4ecc-b1c8-14c62e8a0ea7)\
+**Рисунок 85**
+
+Прописываем номер места (пример 1)
+![изображение](https://github.com/user-attachments/assets/669ca011-bbd0-49cb-9f3d-967ee76836d2)\
+**Рисунок 86**
+
+![изображение](https://github.com/user-attachments/assets/1a2e190a-2012-4e2e-bf2d-43ec6ad320bf)
+**Рисунок 87**
+
+### 9. Обратный прокси-сервер (nginx) на ~~HQ-RTR~~  ISP
 ### 10. Яндекс Браузер
 
 > [!TIP]
-> для скачивания можно поменять на Мост/Bridged и после вернуть
+> для скачивания можно поменять адаптер на NAT/Bridged, создать временное подключение в nmtui и после чего убрать
 
 HQ-CLI
 ```
