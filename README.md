@@ -851,7 +851,7 @@ sudo samba-tool dns add localhost au-team.irpo moodle CNAME ISP.au-team.irpo -U 
 
 Добавим 3 виртуальных жестких дисках по 1 ГБ в VmWare Workstation для BR-SRV\
 Переходим "Edit virtual machine settings" > "Add.." > "Hard Disk"\
-![изображение](https://github.com/user-attachments/assets/b79d9ac1-a4ae-4f61-84fa-9c24287c14ee)\
+![изображение](https://github.com/user-attachments/assets/687f178b-660d-4292-b55e-eb9a7613db03)\
 **Рисунок 61**
 
 Включаем и ставит пакет mdadm
@@ -863,7 +863,7 @@ sudo apt install mdadm -y
 ```
 lsblk
 ```
-![изображение](https://github.com/user-attachments/assets/677a6e25-b792-41bf-9c29-a4ca35e08b9a)\
+![442169897-677a6e25-b792-41bf-9c29-a4ca35e08b9a](https://github.com/user-attachments/assets/722db6d2-dd1e-4413-91b4-d3acbc9e60e0)\
 **Рисунок 62 - список дисков**
 
 Создаём raid-массив и форматируем его в файловой системе ext4
@@ -898,7 +898,7 @@ sudo systemctl enable nfs-kernel-server
 ```
 Создаём папку которая будет использоваться как сетевая папка и выдаём особые права
 ```
-sudo mkdir -p /raid5/nfs
+sudo mkdir /raid5/nfs
 sudo chown nobody:nogroup /raid5/nfs 
 sudo chmod 755 /raid5/nfs
 ```
@@ -1069,11 +1069,6 @@ ansible all -m ping
 ```
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose docker-compose-plugin
 ```
-
-```
-sudo usermod -aG docker $USER
-sudo chown $USER /var/run/docker.sock
-```
 Создаём конфигурационный файл для MediaWiki
 ```
 sudo nano wiki.yml
@@ -1096,16 +1091,16 @@ services:
    - images:/var/www/html/images
    #- ./LocalSettings.php:/var/www/html/LocalSettings.php
  database:
-  container_name: db
-  image: mysql
+  container_name: mariadb
+  image: mariadb
   restart: always
   environment:
    MYSQL_DATABASE: mediawiki
    MYSQL_USER: wiki
-   MYSQL_PASSWORD: DEP@ssw0rd
+   MYSQL_PASSWORD: WikiP@ssw0rd
    MYSQL_RANDOM_ROOT_PASSWORD: 'yes'	
   volumes:
-    - dbvolume:/var/lib/mysql
+    - dbvolume:/var/lib/mariadb
 
 volumes:
  images:
@@ -1119,8 +1114,65 @@ sudo docker volume create --name=dbvolume
 ```
 Запускаем докер указывая конфигурационный файл
 ```
-docker compose -f wiki.yml up
+sudo docker compose -f wiki.yml up
 ```
+
+На HQ-CLI c помощью браузера по адресу http://192.168.3.30:8080 или http://BR-SRV:8080
+![изображение](https://github.com/user-attachments/assets/84e67bd5-772e-45fe-956e-060519683972)\
+**Рисунок 70**
+
+Указываем\ 
+хост базы данных: mariadb\
+имя базы данных mediawiki\ 
+имя пользователя базы данных: wiki\
+пароль базы данных: WikiP@ssw0rd\
+![изображение](https://github.com/user-attachments/assets/ca936c95-9f97-4cb4-99dc-b8d3a1d78eb3)\
+**Рисунок 71**
+
+![изображение](https://github.com/user-attachments/assets/a32bc89e-bc79-4301-b32b-8969c31681f8)\
+**Рисунок 72**
+
+Называем вики, создаём администратора и выбираем пункт "Хватит уже, просто установите вики"\
+![изображение](https://github.com/user-attachments/assets/293c739e-c3ae-4942-a696-d4d5ceec0b0d)\
+**Рисунок 73**
+
+![изображение](https://github.com/user-attachments/assets/22c765c0-a0ef-4210-aef2-85f8ca4fdbcb)\
+**Рисунок 74**
+
+![изображение](https://github.com/user-attachments/assets/88fff5a6-5d6b-4260-bb41-214e39582242)\
+**Рисунок 75**
+
+Скачиваем файл и остправляем его по scp с HQ-CLI на BR-RTR\
+![изображение](https://github.com/user-attachments/assets/f0d0808d-53b5-493e-9bad-4823dca7a334)\
+**Рисунок 76**
+```
+scp -P 2024 Загрузки/LocalSettings.php sshuser@BR-SRV:/home/sshuser
+```
+![изображение](https://github.com/user-attachments/assets/1f3c5e67-ac56-4d4c-acfd-d3f6f25f77b2)\
+**Рисунок 77**
+
+Останавливаем контейнеры (ctrl+c) и переносим файл с пользователя sshuser н а того с которого запускается контейнеры
+```
+sudo ls /home/sshuser/
+sudo mv /home/sshuser/LocalSettings.php /home/user/LocalSettings.php
+```
+![изображение](https://github.com/user-attachments/assets/dd0061ea-885a-4a83-bef1-0c8899af3c98)\
+**Рисунок 78**
+
+Редактируем файл wiki.yml раскоменчивая строчку с LocalSettings.php
+```
+sudo nano wiki.yml
+   - ./LocalSettings.php:/var/www/html/LocalSettings.php
+ctrl+z
+y
+enter
+```
+Снова запускаем контейнеры и проверяем работу снова зайдя на сайт с HQ-CLI 
+```
+sudo docker compose -f wiki.yml up
+```
+![изображение](https://github.com/user-attachments/assets/4edc6f05-a9ec-4746-82af-9b1a787a3c8a)\
+**Рисунок 79**
 
 ### 7. Статическая трансляция портов
 ### 8. Сервис Moodle на HQ-SRV
