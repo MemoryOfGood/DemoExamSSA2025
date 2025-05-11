@@ -1274,7 +1274,8 @@ DocumentRoot "/var/www/moodle"
 sudo systemctl restart apache2
 ```
 
-На HQ-CLI c помощью браузера по адресу http://192.168.1.62 или http://HQ-SRV.au-team.irpo\
+На HQ-CLI c помощью браузера по адресу http://192.168.1.62 или http://HQ-SRV.au-team.irpo
+
 Выбираем язык - Русский (ru)\
 ![изображение](https://github.com/user-attachments/assets/cadf1bd4-d973-4bb7-9e28-e939b0189906)\
 **Рисунок 82**
