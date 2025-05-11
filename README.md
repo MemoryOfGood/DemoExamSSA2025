@@ -563,7 +563,7 @@ ctrl+z
 y
 enter
 ```
-![изображение](https://github.com/user-attachments/assets/56372b32-f51c-43da-99f8-b88933684b21)\
+![Безымянный](https://github.com/user-attachments/assets/7ea586b1-c9b7-46df-bbce-236bd9fa7137)\
 **Рисунок 46 - db.irpo**
 
 И рекурсивную зону
@@ -589,9 +589,8 @@ sudo systemctl restart named
 |  HQ-CLI  |  hq-cli.au-team.irpo  |  A,PTR  |
 |  HQ-SRV  |  hq-srv.au-team.irpo  |  A,PTR  |
 |  BR-SRV  |  br-srv.au-team.irpo  |  A  |
-|  ISP  |  isp.au-team.irpo  |  A  |
-|  ISP  |  moodle.au-team.irpo  |  CNAME  |
-|  ISP  |  wiki.au-team.irpo  |  CNAME  |
+|  ISP  |  moodle.au-team.irpo  |  A  |
+|  ISP  |  wiki.au-team.irpo  |  A  |
 
 
 ### 11. Часовой пояс
@@ -827,10 +826,8 @@ sudo samba-tool dns add localhost au-team.irpo BR-RTR A 192.168.3.1 -U administr
 sudo samba-tool dns add localhost au-team.irpo BR-SRV A 192.168.3.30 -U administrator
 
 #ISP
-sudo samba-tool dns add localhost au-team.irpo ISP A 172.16.4.1 -U administrator
-sudo samba-tool dns add localhost au-team.irpo ISP A 172.16.5.1 -U administrator
-sudo samba-tool dns add localhost au-team.irpo wiki CNAME ISP.au-team.irpo -U administrator
-sudo samba-tool dns add localhost au-team.irpo moodle CNAME ISP.au-team.irpo -U administrator
+sudo samba-tool dns add localhost au-team.irpo moodle A 172.16.4.1 -U administrator
+sudo samba-tool dns add localhost au-team.irpo wiki A 172.16.5.1 -U administrator
 ```
 
 **Таблица 4**
@@ -840,9 +837,8 @@ sudo samba-tool dns add localhost au-team.irpo moodle CNAME ISP.au-team.irpo -U 
 |  HQ-CLI  |  hq-cli.au-team.irpo  |  A,PTR  |
 |  BR-RTR  |  br-rtr.au-team.irpo  |  A  |
 |  BR-SRV  |  br-srv.au-team.irpo  |  A  |
-|  ISP  |  isp.au-team.irpo  |  A  |
-|  ISP  |  moodle.au-team.irpo  |  CNAME  |
-|  ISP  |  wiki.au-team.irpo  |  CNAME  |
+|  ISP  |  moodle.au-team.irpo  |  A  |  
+|  ISP  |  wiki.au-team.irpo  |  A  |
 
 
 ### 3. Сетевое файлое хранилище (NFS сервер)
@@ -1180,6 +1176,24 @@ sudo docker compose -f wiki.yml up
 **Рисунок 79**
 
 ### 7. Статическая трансляция портов
+На HQ-RTR\
+Переходим в "IP" > "Firewall" > "NAT" и создаём два правило\
+![Безымянный](https://github.com/user-attachments/assets/83857d58-02dd-4eba-8c0d-d8dd408f6f8f)\
+**Рисунок 80**
+
+Командой 
+```
+ip/firewall/nat/add chain=dstnat dst-address=172.16.4.2 protocol=tcp port=2024 action=dst-nat to-addresses=192.168.1.62 to-ports=2024
+```
+На BR-RTR\
+![Безымянный](https://github.com/user-attachments/assets/0cb8eb13-d9d2-4ff9-a0f8-aca5cb686d8f)\
+**Рисунок 81**
+
+Командой 
+```
+ip/firewall/nat/add chain=dstnat dst-address=172.16.5.2 protocol=tcp port=2024 action=dst-nat to-addresses=192.168.3.30 to-ports=2024
+```
+
 ### 8. Сервис Moodle на HQ-SRV
 > [!NOTE]
 > Задание обновленно под версию 5.0
@@ -1263,38 +1277,87 @@ sudo systemctl restart apache2
 На HQ-CLI c помощью браузера по адресу http://192.168.1.62 или http://HQ-SRV.au-team.irpo\
 Выбираем язык - Русский (ru)\
 ![изображение](https://github.com/user-attachments/assets/cadf1bd4-d973-4bb7-9e28-e939b0189906)\
-**Рисунок 80**
+**Рисунок 82**
 
 Проверяем правильность путям к каталогам\
 ![изображение](https://github.com/user-attachments/assets/1cc77094-1e14-4489-9419-b94ee08c9bbf)\
-**Рисунок 81**
+**Рисунок 83**
 
 Устанавливаем драйвер базы данных MariaDB\
 ![изображение](https://github.com/user-attachments/assets/b03cf66a-aad2-4d6f-9e22-89077e2c2515)\
-**Рисунок 82**
+**Рисунок 84**
 
 Заполняем\
 Название базы данных: mariadb\
 Пользователь базы данных: moodle\
 Пароль: P@ssw0rd\
 ![изображение](https://github.com/user-attachments/assets/87b977f5-9e5d-4499-ae0b-1a264b389f5e)\
-**Рисунок 83**
+**Рисунок 85**
 
 ![изображение](https://github.com/user-attachments/assets/0039d3b7-259a-459f-ae33-8123def2504c)\
-**Рисунок 84**
+**Рисунок 86**
 
 Заполняем пароль P@ssw0rd и ставим часовой пояс\ 
 ![изображение](https://github.com/user-attachments/assets/db7c9d20-0da7-4ecc-b1c8-14c62e8a0ea7)\
-**Рисунок 85**
+**Рисунок 87**
 
 Прописываем номер места (пример 1)
 ![изображение](https://github.com/user-attachments/assets/669ca011-bbd0-49cb-9f3d-967ee76836d2)\
-**Рисунок 86**
+**Рисунок 88**
 
 ![изображение](https://github.com/user-attachments/assets/1a2e190a-2012-4e2e-bf2d-43ec6ad320bf)
-**Рисунок 87**
+**Рисунок 89**
 
 ### 9. Обратный прокси-сервер (nginx) на ~~HQ-RTR~~  ISP
+
+> [!WARNING]
+> Перед началом следует добавить маршруты у адаптерв в nmtui
+
+![Безымянный](https://github.com/user-attachments/assets/20f58fb5-7219-4c89-8fc3-c8581d3b98f8)\
+**Рисунок 90**
+
+Устанавливаем nginx
+```
+sudo apt install nginx
+```
+Отключаем стандартную конфигурацию для web-сервера
+```
+sudo rm /etc/nginx/sites-enabled/default
+```
+Создаём файл /etc/nginx/sites-available/au-team.irpo и вносим свою конфигурацию
+```
+sudo nano /etc/nginx/sites-available/au-team.irpo
+
+server {
+    listen 172.16.4.1:80;
+    server_name moodle.au-team.irpo;
+    location / {
+        proxy_pass http://192.168.1.62:80;
+        include proxy_params;
+    }
+}
+server {
+    listen 172.16.5.1:80;
+    server_name wiki.au-team.irpo;
+    location / {
+        proxy_pass http://192.168.3.30:8080;
+        include proxy_params;
+    }
+}
+```
+![изображение](https://github.com/user-attachments/assets/bafa0d18-6b1e-44da-86cd-0e22d0fa5e92)\
+**Рисунок 91**
+
+Создаём символьную ссылку для работы
+```
+sudo ln -s /etc/nginx/sites-available/au-team.irpo /etc/nginx/sites-enabled/
+```
+
+Проверяем конфигурацию nginx и перезапускаем его
+```
+sudo nginx -t
+sudo systemctl restart nginx
+```
 ### 10. Яндекс Браузер
 
 > [!TIP]
