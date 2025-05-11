@@ -1177,7 +1177,7 @@ sudo docker compose -f wiki.yml up
 
 ### 7. Статическая трансляция портов
 На HQ-RTR\
-Переходим в "IP" > "Firewall" > "NAT" и создаём два правило\
+Переходим в "IP" > "Firewall" > "NAT" и создаём правило\
 ![Безымянный](https://github.com/user-attachments/assets/83857d58-02dd-4eba-8c0d-d8dd408f6f8f)\
 **Рисунок 80**
 
