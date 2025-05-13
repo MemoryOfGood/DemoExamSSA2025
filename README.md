@@ -237,6 +237,7 @@ ctrl+z
 y
 enter
 ```
+Перезапустите виртуальную машину
 
 ![ip_forward](https://github.com/user-attachments/assets/a6ac726e-434b-4faa-ae87-b5db2d3391a3)\
 **Рисунок 15**
