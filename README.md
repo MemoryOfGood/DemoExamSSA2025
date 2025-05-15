@@ -846,9 +846,9 @@ sudo samba-tool dns add localhost au-team.irpo wiki A 172.16.5.1 -U administrato
 > [!IMPORTANT]
 > Перед начало следует выключить и добавить 3 виртуальных жестких диска
 
-Добавим 3 виртуальных жестких дисках по 1 ГБ в VmWare Workstation для BR-SRV\
+Добавим 3 виртуальных жестких дисках по 1 ГБ в VmWare Workstation для HQ-SRV\
 Переходим "Edit virtual machine settings" > "Add.." > "Hard Disk"\
-![изображение](https://github.com/user-attachments/assets/687f178b-660d-4292-b55e-eb9a7613db03)\
+![Безымянный](https://github.com/user-attachments/assets/1f542c96-3287-4163-a386-3228109b3875)\
 **Рисунок 61**
 
 Включаем и ставит пакет mdadm
@@ -906,8 +906,8 @@ sudo echo '/raid5/nfs 192.168.2.0/28(rw,sync,no_subtree_check)' | sudo tee -a /e
 sudo exportfs -rav
 ```
 
-Настройка а BR-RTR\
-Выполняем проброс портов чтобы можно было подключиться по nfs к BR-SRV\
+Настройка а HQ-RTR\
+Выполняем проброс портов чтобы можно было подключиться по nfs к HQ-SRV\
 Переходим в "IP" > "Firewall" > "NAT" и создаём два правила\
 ![Безымянный](https://github.com/user-attachments/assets/b8ea7aa3-9bce-42e2-a66f-de4cf2b5acc7)\
 **Рисунок 64**
@@ -923,7 +923,7 @@ ip/firewall/nat/add chain=dstnat action=dst-nat protocol=udp port=2049 to-ports=
 ```
 sudo apt install nfs-common -y 
 sudo mkdir /mnt/nfs
-sudo echo '192.168.3.30:/raid5/nfs /mnt/nfs nfs defaults,user,exec,_netdev 0 0' | sudo tee -a /etc/fstab
+sudo echo '192.168.1.62:/raid5/nfs /mnt/nfs nfs defaults,user,exec,_netdev 0 0' | sudo tee -a /etc/fstab
 sudo systemctl daemon-reload
 sudo mount -a
 ```
