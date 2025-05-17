@@ -180,7 +180,7 @@ sudo reboot
 Также вносим изменение в файл /etc/hosts, для коректной работы
 ```
 sudo nano /etc/hosts
-127.0.1.1  ISP  BR-SRV.au-team.irpo
+127.0.1.1  BR-SRV  BR-SRV.au-team.irpo
 ctrl+x
 y
 enter
@@ -422,7 +422,7 @@ interface/gre/add name=BR-HQ local-address=172.16.5.2 remote-address=172.16.4.2 
 **Рисунок 31**
 
 Для BR-RTR\
-![изображение](https://github.com/user-attachments/assets/d13d3c76-dcc1-4305-bfb1-1b4cd6ef5016)\
+![изображение](https://github.com/user-attachments/assets/fa1e08d9-190c-4c7e-af71-29062e45e26e)\
 **Рисунок 32**
 
 Командами\
@@ -564,7 +564,7 @@ ctrl+z
 y
 enter
 ```
-![Безымянный](https://github.com/user-attachments/assets/7ea586b1-c9b7-46df-bbce-236bd9fa7137)\
+![изображение](https://github.com/user-attachments/assets/54d7a0cd-cebd-43f6-b754-8dbdf9b6d5bc)\
 **Рисунок 46 - db.irpo**
 
 И рекурсивную зону
