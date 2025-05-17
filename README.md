@@ -408,7 +408,7 @@ enter
 ```
 Создаем файл и записывем в него баннер 
 ```
-echo "«Authorized access only»" | sudo tee /etc/ssh/ssh_banner
+echo "Authorized access only" | sudo tee /etc/ssh/ssh_banner
 ```
 И перезагружаем службу sshd
 ```
