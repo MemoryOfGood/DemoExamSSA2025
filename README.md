@@ -310,14 +310,23 @@ ip/address/add address=192.168.2.1/28 network=192.168.2.0 interface=vlan200
 ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 ```
 
+
+
+
 На BR-RTR
 
 ![{FC4934E3-EC58-4C7D-AB04-207E9264B02F}](https://github.com/user-attachments/assets/4de4628e-14a4-4ce0-991b-b8a9444ab0f1)\
 **Рисунок 20**
 
+У этого адаптера указываем IP-адрес 192.168.99.5/29
+![изображение](https://github.com/user-attachments/assets/d3e26d5d-0b14-413e-bf9d-be92ff589a2e)\
+**Рисунок 21**
+
+
+
 Командой
 ```
-ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
+ip/address/add address=192.168.99.5/29 network=192.168.99.0 interface=vlan999
 ```
 
 > [!WARNING]
@@ -326,24 +335,24 @@ ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 Переходим в "настройку Виртуальных сетей" у VMware, изменяем IP-адрес и маску, и убираем галочку с работой DHCP-сервера
 
 ![изображение](https://github.com/user-attachments/assets/85256e86-7668-4a3c-944f-fc305a7dd1bd)\
-**Рисунок 21**
+**Рисунок 22**
 
 После чего переходим к настройке адаптеров в "Панель управления"
 Выбираем "VMware Network Adapter VMnet1"
 
 ![изображение](https://github.com/user-attachments/assets/8be34eba-3e8f-4658-95ed-6c703b4b64fb)\
-**Рисунок 22**
+**Рисунок 23**
 
 Переходим в "Свойства" > "Настроить" > "Дополнительно"
 Там выбираем параметр "VLAN ID" и указываем значение 999
 
 ![{5D297F7E-3D1F-47A1-8E2D-82D785C5C976}](https://github.com/user-attachments/assets/8c938d5f-0e42-4a34-b19f-f75b3d5de8ae)\
-**Рисунок 22**
+**Рисунок 24**
 
 После чего теперь в программе winbox можно будет подключаться через сеть управления указывая IP-адрес 
 
 ![{46A5F906-650E-4CDD-B2D9-776B66097934}](https://github.com/user-attachments/assets/88136d3d-b8f8-4221-ab7b-9448efb0a614)\
-**Рисунок 24**
+**Рисунок 25**
 
 
 Переходим к настройке IP-адресов на HQ-SRV
@@ -353,10 +362,10 @@ nmtui
 ip -c a 
 ```
 ![{16649FED-EEA4-4FE9-B94E-03F996C634A3}](https://github.com/user-attachments/assets/c9df01b0-2813-47da-bead-a08b00e101b1)\
-**Рисунок 25 - nmtui**
+**Рисунок 26 - nmtui**
 
 ![{9CA78156-514A-42A2-A164-5812E6C69CC8}](https://github.com/user-attachments/assets/71d69127-dcba-4e0e-9cc2-6a272522986f)\
-**Рисунок 26 - IP-адрес**
+**Рисунок 27 - IP-адрес**
 
 
 ### 5. Удаленный доступ sshd (openssh-server)
@@ -373,7 +382,7 @@ Port 2024
 MaxAuthTries 2
 ```
 ![изображение](https://github.com/user-attachments/assets/e86aabc5-de61-4be3-804c-a0a04897ef53)\
-**Рисунок 27**
+**Рисунок 28**
 
 Добавляем параметр AllowUsers sshuser, чтобы запретить вход с других пользователей, кроме sshuser
 ```
@@ -381,7 +390,7 @@ AllowUsers sshuser
 ```
 
 ![изображение](https://github.com/user-attachments/assets/187634c5-2f81-4cfc-a5ca-f08c05c3a5f7)\
-**Рисунок 28**
+**Рисунок 29**
 
 
 Находим параметр связанный с баннером, раскоменчиваем и указываем путь до баннера
@@ -389,7 +398,7 @@ AllowUsers sshuser
 Banner /etc/ssh/ssh_banner
 ```
 ![изображение](https://github.com/user-attachments/assets/917d2a2a-90b3-4383-9a1f-7c4eba1a1a6f)\
-**Рисунок 29**
+**Рисунок 30**
 
 Сохранаяем 
 ```
@@ -412,11 +421,11 @@ sudo systemctl restart sshd
 Переходим в "Interfaces" > "GRE Tunnel" и создаём на новый туннель.\
 На HQ-RTR\
 ![изображение](https://github.com/user-attachments/assets/03f8b823-32f5-4e15-9876-2c20b9ca8145)\
-**Рисунок 30**
+**Рисунок 31**
 
 На BR-RTR\
 ![изображение](https://github.com/user-attachments/assets/70c73afb-fffb-468f-9a44-62fa1a5e66ee)\
-**Рисунок 31**
+**Рисунок 32**
 
 Командами\
 Для HQ-RTR\
@@ -431,11 +440,11 @@ interface/gre/add name=BR-HQ local-address=172.16.5.2 remote-address=172.16.4.2 
 Устанавливаем IP-адрес для GRE-туннеля\
 Для HQ-RTR\
 ![изображение](https://github.com/user-attachments/assets/d4178b69-186f-4f2f-80db-71ab327a0fa2)\
-**Рисунок 32**
+**Рисунок 33**
 
 Для BR-RTR\
 ![изображение](https://github.com/user-attachments/assets/fa1e08d9-190c-4c7e-af71-29062e45e26e)\
-**Рисунок 33**
+**Рисунок 34**
 
 Командами\
 Для HQ-RTR
@@ -454,15 +463,15 @@ ip/address/add address=10.10.10.2/30 network=10.10.10.0 interface=BR-HQ
 Переходим в "Routing" > "OSPF"\
 Создаём "Instances"\
 ![изображение](https://github.com/user-attachments/assets/66a4bb20-6bae-464b-a6ee-38dab3c434be)\
-**Рисунок 34**
+**Рисунок 35**
 
 Создаём "Area"\
 ![изображение](https://github.com/user-attachments/assets/555832f0-ddba-405d-83ec-c58464a1b309)\
-**Рисунок 35**
+**Рисунок 36**
 
 Создаём "Interfaces Templates"\
 ![изображение](https://github.com/user-attachments/assets/7c36610c-5e77-436e-bbdd-e49076d32fb6)\
-**Рисунок 36**
+**Рисунок 37**
 
 Командами
 ```
@@ -477,10 +486,10 @@ routing/ospf/interface-template/add area=ospf-area-1 networks="10.10.10.0/30, 19
 
 Переходим в "IP" > "Firewall" > "NAT" и создаём правило\
 ![изображение](https://github.com/user-attachments/assets/9ebaf955-3da8-45b8-b787-654aa29477de)\
-**Рисунок 37**
+**Рисунок 38**
 
 ![изображение](https://github.com/user-attachments/assets/4202a80b-c9a1-412f-913c-5ee1084eddd3)\
-**Рисунок 38**
+**Рисунок 39**
 
 
 Командой
@@ -491,7 +500,7 @@ ip/firewall/nat/add chain=srcnat action=masquerade
 ### 9. DHCP-сервер на HQ-RTR
 Переходим в "IP" > "Pool" и создаём пул адресов\
 ![изображение](https://github.com/user-attachments/assets/1335a3ba-da09-4894-98a9-4ce78578d602)\
-**Рисунок 39**
+**Рисунок 40**
 
 Командой
 ```
@@ -500,14 +509,14 @@ ip/pool/add name=hq-pool ranges="192.168.2.2-192.168.2.14"
 
 После чего переходим в "IP" > "DHCP Server" > "DHCP "и создаем сервер, указывая интерфейс vlan200 и пул hq-pool\
 ![изображение](https://github.com/user-attachments/assets/0dcb139b-ea52-4d09-9c73-fb9f3657940b)\
-**Рисунок 40**
+**Рисунок 41**
 ```
 ip/dhcp-server/add name=dhcp-server interface=vlan200 address-pool=hq-pool
 ```
 
 Переоходим в соседнюю вкладку "Network" и указываем параметры для DHCP сервера\
 ![изображение](https://github.com/user-attachments/assets/f90c1cc7-7fda-43e3-9d44-17badb004d00)\
-**Рисунок 41**
+**Рисунок 42**
 
 Командой
 ```
@@ -516,7 +525,7 @@ ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28
 
 Переходим к HQ-CLI и настраиваем DHCP-клиент на нём\
 ![изображение](https://github.com/user-attachments/assets/12f2dd54-5ebc-45b7-b2df-cbcc27795746)\
-**Рисунок 42**
+**Рисунок 43**
 
 ### 10*. DNS-сервер на HQ-SRV (BIND9)
 > [!IMPORTANT]
@@ -525,7 +534,7 @@ ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28
 
 Временно указываем открытый ДНС-сервер например Яндекса (77.88.8.8), для того чтобы скачать пакет bind9\
 ![изображение](https://github.com/user-attachments/assets/27e531cc-b9a6-42d9-9df8-c556419765a0)\
-**Рисунок 43**
+**Рисунок 44**
 
 Скачиваем пакет bind9
 ```
@@ -534,7 +543,7 @@ sudo apt install bind9 -y
 ```
 После чего ставим IP-адрес HQ-SRV (или 127.0.0.1) и указываем домен\
 ![изображение](https://github.com/user-attachments/assets/f546537b-f115-45d9-8bf4-536858ce468d)\
-**Рисунок 44**
+**Рисунок 45**
 
 >[!NOTE]
 > Указываем данный ДНС-сервер и домен также на ISP, BR-SRV
@@ -551,8 +560,8 @@ ctrl+x
 y
 enter
 ```
-![изображение](https://github.com/user-attachments/assets/ca4a2df4-f887-47f0-8c38-ca914a56c802)\
-**Рисунок 45 - /etc/bind/named.conf.options**
+![изображение](https://github.com/user-attachments/assets/80af62f1-ef40-4ed2-af20-7331b05fef45)\
+**Рисунок 46 - /etc/bind/named.conf.options**
 
 ```
 sudo nano /etc/bind/named.conf.local
@@ -561,7 +570,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/d6aff391-a236-43ee-a4e4-615fe37cda0d)\
-**Рисунок 46 - /etc/bind/named.conf.local**
+**Рисунок 47 - /etc/bind/named.conf.local**
 
 
 Копируем файлы c зонами localhost для того, чтобы на основе сделать новые две зоны: прямую и рекурсивную 
@@ -577,7 +586,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/54d7a0cd-cebd-43f6-b754-8dbdf9b6d5bc)\
-**Рисунок 47 - db.irpo**
+**Рисунок 48 - db.irpo**
 
 И рекурсивную зону
 ```
@@ -987,13 +996,14 @@ sudo systemctl restart chrony
 Сначало создадим правило для порта 123 для подключения к NTP-серверу\
 ![Безымянный](https://github.com/user-attachments/assets/34f80d6e-57be-4f40-bcf3-83305ec00500)\
 **Рисунок 68**
+
 Командой 
 ```
 ip/firewall/filter/add action=accept chain=input protocol=udp port=123
 ```
 
 Переходим в "System" > "NTP Client" и выставляем ip-адрес ISP\
-![изображение](https://github.com/user-attachments/assets/bafd147e-6a16-4431-af8e-fe37ec32e068)\
+\
 **Рисунок 69**
 Командой
 ```
