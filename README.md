@@ -590,6 +590,7 @@ sudo systemctl restart named
 |  HQ-CLI  |  hq-cli.au-team.irpo  |  A,PTR  |
 |  HQ-SRV  |  hq-srv.au-team.irpo  |  A,PTR  |
 |  BR-SRV  |  br-srv.au-team.irpo  |  A  |
+|  ISP  |  isp.au-team.irpo  |  A  |
 |  ISP  |  moodle.au-team.irpo  |  A  |
 |  ISP  |  wiki.au-team.irpo  |  A  |
 
@@ -828,6 +829,7 @@ sudo samba-tool dns add localhost au-team.irpo BR-SRV A 192.168.3.30 -U administ
 
 #ISP
 sudo samba-tool dns add localhost au-team.irpo moodle A 172.16.4.1 -U administrator
+sudo samba-tool dns add localhost au-team.irpo ISP A 172.16.4.1 -U administrator
 sudo samba-tool dns add localhost au-team.irpo wiki A 172.16.5.1 -U administrator
 ```
 
@@ -838,6 +840,7 @@ sudo samba-tool dns add localhost au-team.irpo wiki A 172.16.5.1 -U administrato
 |  HQ-CLI  |  hq-cli.au-team.irpo  |  A,PTR  |
 |  BR-RTR  |  br-rtr.au-team.irpo  |  A  |
 |  BR-SRV  |  br-srv.au-team.irpo  |  A  |
+|  ISP  |  isp.au-team.irpo  |  A  |
 |  ISP  |  moodle.au-team.irpo  |  A  |  
 |  ISP  |  wiki.au-team.irpo  |  A  |
 
