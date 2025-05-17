@@ -325,13 +325,13 @@ ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 
 Переходим в "настройку Виртуальных сетей" у VMware, изменяем IP-адрес и маску, и убираем галочку с работой DHCP-сервера
 
-![{E85B35AA-B4B8-4776-9A7A-80EB8C67988A}](https://github.com/user-attachments/assets/9a0672ee-ca85-4e67-98c9-de24e6a7aaa2)\
+![изображение](https://github.com/user-attachments/assets/85256e86-7668-4a3c-944f-fc305a7dd1bd)\
 **Рисунок 21**
 
 После чего переходим к настройке адаптеров в "Панель управления"
 Выбираем "VMware Network Adapter VMnet1"
 
-![изображение](https://github.com/user-attachments/assets/85256e86-7668-4a3c-944f-fc305a7dd1bd)\
+![изображение](https://github.com/user-attachments/assets/8be34eba-3e8f-4658-95ed-6c703b4b64fb)\
 **Рисунок 22**
 
 Переходим в "Свойства" > "Настроить" > "Дополнительно"
