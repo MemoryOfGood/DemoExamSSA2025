@@ -233,7 +233,7 @@ sudo iptables -t nat -A POSTROUTING -o ens33 -j MASQUERADE
 ```
 sudo nano /etc/sysctl.conf
 net.ipv4.ip_forward=1
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -276,7 +276,7 @@ sudo usermod -aG sudo sshuser
 ```
 sudo visudo
 sshuser ALL=(ALL:ALL) NOPASSWD:ALL
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -331,7 +331,7 @@ ip/address/add address=192.168.99.4/29 network=192.168.99.0 interface=vlan999
 После чего переходим к настройке адаптеров в "Панель управления"
 Выбираем "VMware Network Adapter VMnet1"
 
-![{65500167-E544-4D7C-84BD-F7EF88A4BD7A}](https://github.com/user-attachments/assets/03dcf518-cdc7-4b61-8feb-bbb53553b223)\
+![изображение](https://github.com/user-attachments/assets/85256e86-7668-4a3c-944f-fc305a7dd1bd)\
 **Рисунок 22**
 
 Переходим в "Свойства" > "Настроить" > "Дополнительно"
@@ -367,7 +367,7 @@ sudo apt install openssh-server -y
 sudo nano /etc/ssh/sshd_config
 ```
 
-Изменяем порт на 2025, ограничиваем количество попыток до двух (MaxAuthTries)
+Изменяем порт на 2024, ограничиваем количество попыток до двух (MaxAuthTries)
 ```
 Port 2024
 MaxAuthTries 2
@@ -385,7 +385,7 @@ AllowUsers sshuser
 
 Сохранаяем 
 ```
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -535,7 +535,7 @@ sudo systemctl enable named
 Редактируем файл /etc/bind/named.conf.options
 ```
 sudo nano /etc/bind/named.conf.options
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -544,7 +544,7 @@ enter
 
 ```
 sudo nano /etc/bind/named.conf.local
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -560,7 +560,7 @@ sudo cp /etc/bind/db.127 /etc/bind/db.172
 Редактируем файл под прямую зону 
 ```
 sudo nano /etc/bind/db.irpo
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -570,7 +570,7 @@ enter
 И рекурсивную зону
 ```
 sudo nano /etc/bind/db.127
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -635,7 +635,7 @@ sudo nano /etc/krb5.conf
   default_realm = AU-TEAM.IRPO
   dns_lookup_kdc = true
   dns_lookup_realm = false
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -663,7 +663,7 @@ sudo samba-tool user setpassword administrator
 ```
 sudo nano /etc/samba/smb.conf
   dns forwarder = 77.88.8.8
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -746,7 +746,7 @@ sudo nano /etc/bind/named.conf.options
   auth-nxdomain no;
   tkey-gssapi-keytab "/var/lib/samba/bind-dns/dns.keytab";sev
   minimal-responses yes;
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -760,7 +760,7 @@ sudo nano /etc/bind/named.conf.local
 dlz "au-team.irpo" {
   database "dlopen /usr/lib/x86_64-linux-gnu/samba/bind9/dlz_bind9_18.so";
 };
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -771,7 +771,7 @@ enter
 ```
 sudo nano /etc/default/named
 OPTIONS="-4 -u bind"
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -783,7 +783,7 @@ enter
 sudo nano /etc/samba/smb.conf
 server services = -dns
 # dns forwarder = 77.88.8.8
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -962,7 +962,7 @@ local stratum 5
 ```
 Сохраняем файл
 ```
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -1003,7 +1003,7 @@ sudo apt install chrony -y
 ```
 sudo nano /etc/chrony/chrony.conf
 pool ISP.au-team.irpo iburst
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -1040,7 +1040,7 @@ HQ-CLI ansible_user=user ansible_password=1
 ```
 Сохраняем файл
 ```
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -1050,7 +1050,7 @@ sudo nano /etc/ansible/ansible.cfg
 [defaults]
 inventoty = /etc/ansible/hosts
 host_key_checking = false
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -1168,7 +1168,7 @@ sudo mv /home/sshuser/LocalSettings.php /home/user/LocalSettings.php
 ```
 sudo nano wiki.yml
    - ./LocalSettings.php:/var/www/html/LocalSettings.php
-ctrl+z
+ctrl+x
 y
 enter
 ```
@@ -1218,7 +1218,7 @@ post_max_size = 80M
 upload_max_filesize = 80M
 max_input_vars=25000	
 
-ctrl+z
+ctrl+x
 y
 enter
 ```
