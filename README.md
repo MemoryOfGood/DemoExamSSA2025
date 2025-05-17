@@ -383,11 +383,23 @@ AllowUsers sshuser
 ![изображение](https://github.com/user-attachments/assets/187634c5-2f81-4cfc-a5ca-f08c05c3a5f7)\
 **Рисунок 28**
 
+
+Находим параметр связанный с баннером, раскоменчиваем и указываем путь до баннера
+```
+Banner /etc/ssh/ssh_banner
+```
+![изображение](https://github.com/user-attachments/assets/917d2a2a-90b3-4383-9a1f-7c4eba1a1a6f)\
+**Рисунок 29**
+
 Сохранаяем 
 ```
 ctrl+x
 y
 enter
+```
+Создаем файл и записывем в него баннер 
+```
+echo "«Authorized access only»" | sudo tee /etc/ssh/ssh_banner
 ```
 И перезагружаем службу sshd
 ```
@@ -400,11 +412,11 @@ sudo systemctl restart sshd
 Переходим в "Interfaces" > "GRE Tunnel" и создаём на новый туннель.\
 На HQ-RTR\
 ![изображение](https://github.com/user-attachments/assets/03f8b823-32f5-4e15-9876-2c20b9ca8145)\
-**Рисунок 29**
+**Рисунок 30**
 
 На BR-RTR\
 ![изображение](https://github.com/user-attachments/assets/70c73afb-fffb-468f-9a44-62fa1a5e66ee)\
-**Рисунок 30**
+**Рисунок 31**
 
 Командами\
 Для HQ-RTR\
@@ -419,11 +431,11 @@ interface/gre/add name=BR-HQ local-address=172.16.5.2 remote-address=172.16.4.2 
 Устанавливаем IP-адрес для GRE-туннеля\
 Для HQ-RTR\
 ![изображение](https://github.com/user-attachments/assets/d4178b69-186f-4f2f-80db-71ab327a0fa2)\
-**Рисунок 31**
+**Рисунок 32**
 
 Для BR-RTR\
 ![изображение](https://github.com/user-attachments/assets/fa1e08d9-190c-4c7e-af71-29062e45e26e)\
-**Рисунок 32**
+**Рисунок 33**
 
 Командами\
 Для HQ-RTR
@@ -442,15 +454,15 @@ ip/address/add address=10.10.10.2/30 network=10.10.10.0 interface=BR-HQ
 Переходим в "Routing" > "OSPF"\
 Создаём "Instances"\
 ![изображение](https://github.com/user-attachments/assets/66a4bb20-6bae-464b-a6ee-38dab3c434be)\
-**Рисунок 33**
+**Рисунок 34**
 
 Создаём "Area"\
 ![изображение](https://github.com/user-attachments/assets/555832f0-ddba-405d-83ec-c58464a1b309)\
-**Рисунок 34**
+**Рисунок 35**
 
 Создаём "Interfaces Templates"\
 ![изображение](https://github.com/user-attachments/assets/7c36610c-5e77-436e-bbdd-e49076d32fb6)\
-**Рисунок 35**
+**Рисунок 36**
 
 Командами
 ```
@@ -465,10 +477,10 @@ routing/ospf/interface-template/add area=ospf-area-1 networks="10.10.10.0/30, 19
 
 Переходим в "IP" > "Firewall" > "NAT" и создаём правило\
 ![изображение](https://github.com/user-attachments/assets/9ebaf955-3da8-45b8-b787-654aa29477de)\
-**Рисунок 36**
+**Рисунок 37**
 
 ![изображение](https://github.com/user-attachments/assets/4202a80b-c9a1-412f-913c-5ee1084eddd3)\
-**Рисунок 37**
+**Рисунок 38**
 
 
 Командой
@@ -479,7 +491,7 @@ ip/firewall/nat/add chain=srcnat action=masquerade
 ### 9. DHCP-сервер на HQ-RTR
 Переходим в "IP" > "Pool" и создаём пул адресов\
 ![изображение](https://github.com/user-attachments/assets/1335a3ba-da09-4894-98a9-4ce78578d602)\
-**Рисунок 38**
+**Рисунок 39**
 
 Командой
 ```
@@ -488,14 +500,14 @@ ip/pool/add name=hq-pool ranges="192.168.2.2-192.168.2.14"
 
 После чего переходим в "IP" > "DHCP Server" > "DHCP "и создаем сервер, указывая интерфейс vlan200 и пул hq-pool\
 ![изображение](https://github.com/user-attachments/assets/0dcb139b-ea52-4d09-9c73-fb9f3657940b)\
-**Рисунок 38**
+**Рисунок 40**
 ```
 ip/dhcp-server/add name=dhcp-server interface=vlan200 address-pool=hq-pool
 ```
 
 Переоходим в соседнюю вкладку "Network" и указываем параметры для DHCP сервера\
 ![изображение](https://github.com/user-attachments/assets/f90c1cc7-7fda-43e3-9d44-17badb004d00)\
-**Рисунок 40**
+**Рисунок 41**
 
 Командой
 ```
@@ -504,7 +516,7 @@ ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28
 
 Переходим к HQ-CLI и настраиваем DHCP-клиент на нём\
 ![изображение](https://github.com/user-attachments/assets/12f2dd54-5ebc-45b7-b2df-cbcc27795746)\
-**Рисунок 41**
+**Рисунок 42**
 
 ### 10*. DNS-сервер на HQ-SRV (BIND9)
 > [!IMPORTANT]
@@ -513,7 +525,7 @@ ip/dhcp-server/network/add address=192.168.2.1/28 gateway=192.168.2.0 netmask=28
 
 Временно указываем открытый ДНС-сервер например Яндекса (77.88.8.8), для того чтобы скачать пакет bind9\
 ![изображение](https://github.com/user-attachments/assets/27e531cc-b9a6-42d9-9df8-c556419765a0)\
-**Рисунок 42**
+**Рисунок 43**
 
 Скачиваем пакет bind9
 ```
@@ -522,7 +534,7 @@ sudo apt install bind9 -y
 ```
 После чего ставим IP-адрес HQ-SRV (или 127.0.0.1) и указываем домен\
 ![изображение](https://github.com/user-attachments/assets/f546537b-f115-45d9-8bf4-536858ce468d)\
-**Рисунок 43**
+**Рисунок 44**
 
 >[!NOTE]
 > Указываем данный ДНС-сервер и домен также на ISP, BR-SRV
@@ -540,7 +552,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/ca4a2df4-f887-47f0-8c38-ca914a56c802)\
-**Рисунок 44 - /etc/bind/named.conf.options**
+**Рисунок 45 - /etc/bind/named.conf.options**
 
 ```
 sudo nano /etc/bind/named.conf.local
@@ -549,7 +561,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/d6aff391-a236-43ee-a4e4-615fe37cda0d)\
-**Рисунок 45 - /etc/bind/named.conf.local**
+**Рисунок 46 - /etc/bind/named.conf.local**
 
 
 Копируем файлы c зонами localhost для того, чтобы на основе сделать новые две зоны: прямую и рекурсивную 
@@ -565,7 +577,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/54d7a0cd-cebd-43f6-b754-8dbdf9b6d5bc)\
-**Рисунок 46 - db.irpo**
+**Рисунок 47 - db.irpo**
 
 И рекурсивную зону
 ```
@@ -575,7 +587,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/8489a772-6f64-4de6-9540-02519ef0b3fb)\
-**Рисунок 47 - db.127**
+**Рисунок 48 - db.127**
 
 Перезапускаем ДНС-сервер
 ```
@@ -607,7 +619,7 @@ timedatectl set-timezone Asia/Irkutsk
 Для HQ-RTR/BR-RTR
 Заходим в "System" > "Clock"\
 ![изображение](https://github.com/user-attachments/assets/0fe62699-83f5-40a0-a900-e63eb589723e)\
-**Рисунок 48**
+**Рисунок 49**
 
 Командой
 ```
@@ -618,7 +630,7 @@ system/clock/set time-zone-name=Asia/Irkutsk
 ### 1. Доменный контролер Samba на HQ-SRV
 Временно указываем открытый ДНС-сервер например Яндекса (77.88.8.8), для того чтобы скачать пакеты свящанные с samba-ad-dc \
 ![изображение](https://github.com/user-attachments/assets/27e531cc-b9a6-42d9-9df8-c556419765a0)\
-**Рисунок 49**
+**Рисунок 50**
 
 Устанавливаем пакеты с samba-ad-dc
 ```
@@ -640,7 +652,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/da65ae21-a9a2-41e8-b2c0-2695f3e6ebb0)\
-**Рисунок 50**
+**Рисунок 51**
 
 Удаляем файл /etc/samba/smb.conf и останавливаем службы 
 ```
@@ -653,7 +665,7 @@ sudo samba-tool domain provision --realm=AU-TEAM.IRPO --domain AU-TEAM --server-
 ```
 
 ![изображение](https://github.com/user-attachments/assets/c8fd6994-fdc8-4c64-b4db-692a9f95a188)\
-**Рисунок 51 - удачная установка домена**
+**Рисунок 52 - удачная установка домена**
 
 Указываем пароль для администратора
 ```
@@ -668,11 +680,11 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/0f2dd8c2-99eb-4ec5-ad4e-4ef2505c1ec6)\
-**Рисунок 52**
+**Рисунок 53**
 
 После чего ставим IP-адрес HQ-SRV (или 127.0.0.1) и указываем домен\
 ![изображение](https://github.com/user-attachments/assets/f546537b-f115-45d9-8bf4-536858ce468d)\
-**Рисунок 53**
+**Рисунок 54**
 
 Удаляем ненужный файл и создаём символьную ссылку
 ```
@@ -693,7 +705,7 @@ kinit administrator
 klist
 ```
 ![изображение](https://github.com/user-attachments/assets/ff963a29-45a6-44a0-9dc6-cddb32207575)\
-**Рисунок 54**
+**Рисунок 55**
 
 Создаём пользователей user№.hq и вводим пароля
 ```
@@ -720,7 +732,7 @@ sudo realm -v discover HQ-SRV.au-team.irpo
 sudo realm join -v HQ-SRV.au-team.irpo
 ```
 ![изображение](https://github.com/user-attachments/assets/6c8ab7c5-406d-478a-bb91-e739fed59c7c)\
-**Рисунок 55 - Машина удачно добавленна в домен**
+**Рисунок 56 - Машина удачно добавленна в домен**
 
 
 > [!IMPORTANT]
@@ -752,7 +764,7 @@ enter
 ```
 
 ![изображение](https://github.com/user-attachments/assets/fc17b45f-4188-4cd5-9f70-caea96d0c495)\
-**Рисунок 56**
+**Рисунок 57**
 
 Редактируем файл /etc/bind/named.conf.local
 ```
@@ -765,7 +777,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/15850bb5-624a-4a33-9300-9b1d1bfe4407)\
-**Рисунок 57**
+**Рисунок 58**
 
 Изменяем файл /etc/default/named
 ```
@@ -776,7 +788,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/26c69cec-6402-4fb5-bc0c-28d618812002)\
-**Рисунок 58**
+**Рисунок 59**
 
 Изменяем параметр в файле /etc/samba/smb.conf, чтобы за ДНС-сервер отвечал bind9
 ```
@@ -788,7 +800,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/d37fa431-24ce-48cd-95b7-dbf3fd2abf11)\
-**Рисунок 59**
+**Рисунок 60**
 
 Создаём папку для ДНС-сервера и переключаем режим на BIND9_DLZ
 ```
@@ -796,7 +808,7 @@ sudo mkdir /var/lib/samba/bind-dns/dns
 samba_upgradedns --dns-backend=BIND9_DLZ
 ```
 ![изображение](https://github.com/user-attachments/assets/3e7007ce-47b6-41e7-a976-171277c25dbf)\
-**Рисунок 60 - обновление ДНС**
+**Рисунок 61 - обновление ДНС**
 
 Создаём обратную зону и перезапускаем для активации её
 ```
@@ -852,7 +864,7 @@ sudo samba-tool dns add localhost au-team.irpo wiki A 172.16.5.1 -U administrato
 Добавим 3 виртуальных жестких дисках по 1 ГБ в VmWare Workstation для HQ-SRV\
 Переходим "Edit virtual machine settings" > "Add.." > "Hard Disk"\
 ![Безымянный](https://github.com/user-attachments/assets/1f542c96-3287-4163-a386-3228109b3875)\
-**Рисунок 61**
+**Рисунок 62**
 
 Включаем и ставит пакет mdadm
 ``` 
@@ -864,7 +876,7 @@ sudo apt install mdadm -y
 lsblk
 ```
 ![442169897-677a6e25-b792-41bf-9c29-a4ca35e08b9a](https://github.com/user-attachments/assets/722db6d2-dd1e-4413-91b4-d3acbc9e60e0)\
-**Рисунок 62 - список дисков**
+**Рисунок 63 - список дисков**
 
 Создаём raid-массив и форматируем его в файловой системе ext4
 ```
@@ -881,7 +893,7 @@ sudo mount /dev/md0 /raid5
 df -h
 ```
 ![изображение](https://github.com/user-attachments/assets/7479f413-bcac-43cf-81b0-18d7dc373095)\
-**Рисунок 63**
+**Рисунок 64**
 
 Считываем характериски массиав и записываем в файл /etc/mdadm/mdadm.conf, чтобы массив автоматически подключался после перезагрузки 
 ```
@@ -913,7 +925,7 @@ sudo exportfs -rav
 Выполняем проброс портов чтобы можно было подключиться по nfs к HQ-SRV\
 Переходим в "IP" > "Firewall" > "NAT" и создаём два правила\
 ![Безымянный](https://github.com/user-attachments/assets/b8ea7aa3-9bce-42e2-a66f-de4cf2b5acc7)\
-**Рисунок 64**
+**Рисунок 65**
 
 Командой
 ```
@@ -942,7 +954,7 @@ sudo nano /etc/chrony/chrony.conf
 ```
 Изменяем стандартный сервер на российские 
 ![изображение](https://github.com/user-attachments/assets/b3f62a1f-1056-4051-a5c4-56654c11255a)\
-**Рисунок 65**
+**Рисунок 66**
 ```
 pool 0.ru.pool.ntp.org iburst
 pool 1.ru.pool.ntp.org iburst
@@ -951,7 +963,7 @@ pool 3.ru.pool.ntp.org iburst
 ```
 и прописываем подсети с которых устройства могут подключаться к NTP-серверу\
 ![изображение](https://github.com/user-attachments/assets/42977f02-2eb2-4a5a-a62d-90af613d1012)\
-**Рисунок 66**
+**Рисунок 67**
 ```
 allow 172.16.4.0/28
 allow 172.16.5.0/28
@@ -974,7 +986,7 @@ sudo systemctl restart chrony
 Для HQ-RTR/BR-RTR\
 Сначало создадим правило для порта 123 для подключения к NTP-серверу\
 ![Безымянный](https://github.com/user-attachments/assets/34f80d6e-57be-4f40-bcf3-83305ec00500)\
-**Рисунок 67**
+**Рисунок 68**
 Командой 
 ```
 ip/firewall/filter/add action=accept chain=input protocol=udp port=123
@@ -982,7 +994,7 @@ ip/firewall/filter/add action=accept chain=input protocol=udp port=123
 
 Переходим в "System" > "NTP Client" и выставляем ip-адрес ISP\
 ![изображение](https://github.com/user-attachments/assets/bafd147e-6a16-4431-af8e-fe37ec32e068)\
-**Рисунок 67**
+**Рисунок 69**
 Командой
 ```
 system/ntp/client/servers/add address=172.16.4.1
@@ -1008,7 +1020,7 @@ y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/ed860606-8387-4298-95e9-4a795bf4ab90)\
-**Рисунок 68**
+**Рисунок 70**
 
 Перезапускаем службу chrony
 ```
@@ -1060,7 +1072,7 @@ enter
 ansible all -m ping
 ```
 ![изображение](https://github.com/user-attachments/assets/aca1aacf-b2ed-4d00-af26-b39e27d16f3e)\
-**Рисунок 69**
+**Рисунок 71**
 
 ### 6. Docker compose на BR-SRV
 > [!TIP]
@@ -1124,7 +1136,7 @@ sudo docker compose -f wiki.yml up
 
 На HQ-CLI c помощью браузера по адресу http://192.168.3.30:8080 или http://BR-SRV.au-team.irpo:8080
 ![изображение](https://github.com/user-attachments/assets/84e67bd5-772e-45fe-956e-060519683972)\
-**Рисунок 70**
+**Рисунок 72**
 
 Заполняем\
 хост базы данных: mariadb\
@@ -1132,29 +1144,29 @@ sudo docker compose -f wiki.yml up
 имя пользователя базы данных: wiki\
 пароль базы данных: WikiP@ssw0rd\
 ![изображение](https://github.com/user-attachments/assets/ca936c95-9f97-4cb4-99dc-b8d3a1d78eb3)\
-**Рисунок 71**
+**Рисунок 73**
 
 ![изображение](https://github.com/user-attachments/assets/a32bc89e-bc79-4301-b32b-8969c31681f8)\
-**Рисунок 72**
+**Рисунок 74**
 
 Называем вики, создаём администратора и выбираем пункт "Хватит уже, просто установите вики"\
 ![изображение](https://github.com/user-attachments/assets/293c739e-c3ae-4942-a696-d4d5ceec0b0d)\
-**Рисунок 73**
+**Рисунок 75**
 
 ![изображение](https://github.com/user-attachments/assets/22c765c0-a0ef-4210-aef2-85f8ca4fdbcb)\
-**Рисунок 74**
+**Рисунок 76**
 
 ![изображение](https://github.com/user-attachments/assets/88fff5a6-5d6b-4260-bb41-214e39582242)\
-**Рисунок 75**
+**Рисунок 77**
 
 Скачиваем файл и остправляем его по scp с HQ-CLI на BR-SRV\
 ![изображение](https://github.com/user-attachments/assets/f0d0808d-53b5-493e-9bad-4823dca7a334)\
-**Рисунок 76**
+**Рисунок 78**
 ```
 scp -P 2024 Загрузки/LocalSettings.php sshuser@BR-SRV:/home/sshuser
 ```
 ![изображение](https://github.com/user-attachments/assets/1f3c5e67-ac56-4d4c-acfd-d3f6f25f77b2)\
-**Рисунок 77**
+**Рисунок 79**
 
 Останавливаем контейнеры (ctrl+c) и переносим файл с пользователя sshuser н а того с которого запускается контейнеры
 ```
@@ -1162,7 +1174,7 @@ sudo ls /home/sshuser/
 sudo mv /home/sshuser/LocalSettings.php /home/user/LocalSettings.php
 ```
 ![изображение](https://github.com/user-attachments/assets/dd0061ea-885a-4a83-bef1-0c8899af3c98)\
-**Рисунок 78**
+**Рисунок 80**
 
 Редактируем файл wiki.yml раскоменчивая строчку с LocalSettings.php
 ```
@@ -1177,13 +1189,13 @@ enter
 sudo docker compose -f wiki.yml up
 ```
 ![изображение](https://github.com/user-attachments/assets/4edc6f05-a9ec-4746-82af-9b1a787a3c8a)\
-**Рисунок 79**
+**Рисунок 81**
 
 ### 7. Статическая трансляция портов
 На HQ-RTR\
 Переходим в "IP" > "Firewall" > "NAT" и создаём правило\
 ![Безымянный](https://github.com/user-attachments/assets/83857d58-02dd-4eba-8c0d-d8dd408f6f8f)\
-**Рисунок 80**
+**Рисунок 82**
 
 Командой 
 ```
@@ -1191,7 +1203,7 @@ ip/firewall/nat/add chain=dstnat dst-address=172.16.4.2 protocol=tcp port=2024 a
 ```
 На BR-RTR\
 ![Безымянный](https://github.com/user-attachments/assets/0cb8eb13-d9d2-4ff9-a0f8-aca5cb686d8f)\
-**Рисунок 81**
+**Рисунок 83**
 
 Командой 
 ```
@@ -1282,36 +1294,36 @@ sudo systemctl restart apache2
 
 Выбираем язык - Русский (ru)\
 ![изображение](https://github.com/user-attachments/assets/cadf1bd4-d973-4bb7-9e28-e939b0189906)\
-**Рисунок 82**
+**Рисунок 84**
 
 Проверяем правильность путям к каталогам\
 ![изображение](https://github.com/user-attachments/assets/1cc77094-1e14-4489-9419-b94ee08c9bbf)\
-**Рисунок 83**
+**Рисунок 85**
 
 Устанавливаем драйвер базы данных MariaDB\
 ![изображение](https://github.com/user-attachments/assets/b03cf66a-aad2-4d6f-9e22-89077e2c2515)\
-**Рисунок 84**
+**Рисунок 86**
 
 Заполняем\
 Название базы данных: mariadb\
 Пользователь базы данных: moodle\
 Пароль: P@ssw0rd\
 ![изображение](https://github.com/user-attachments/assets/87b977f5-9e5d-4499-ae0b-1a264b389f5e)\
-**Рисунок 85**
+**Рисунок 87**
 
 ![изображение](https://github.com/user-attachments/assets/0039d3b7-259a-459f-ae33-8123def2504c)\
-**Рисунок 86**
+**Рисунок 88**
 
 Заполняем пароль P@ssw0rd и ставим часовой пояс\ 
 ![изображение](https://github.com/user-attachments/assets/db7c9d20-0da7-4ecc-b1c8-14c62e8a0ea7)\
-**Рисунок 87**
+**Рисунок 89**
 
 Прописываем номер места (пример 1)
 ![изображение](https://github.com/user-attachments/assets/669ca011-bbd0-49cb-9f3d-967ee76836d2)\
-**Рисунок 88**
+**Рисунок 90**
 
 ![изображение](https://github.com/user-attachments/assets/1a2e190a-2012-4e2e-bf2d-43ec6ad320bf)
-**Рисунок 89**
+**Рисунок 91**
 
 ### 9. Обратный прокси-сервер (nginx) на ~~HQ-RTR~~  ISP
 
@@ -1319,7 +1331,7 @@ sudo systemctl restart apache2
 > Перед началом следует добавить маршруты у адаптерв в nmtui
 
 ![Безымянный](https://github.com/user-attachments/assets/20f58fb5-7219-4c89-8fc3-c8581d3b98f8)\
-**Рисунок 90**
+**Рисунок 92**
 
 Устанавливаем nginx
 ```
