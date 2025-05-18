@@ -590,13 +590,13 @@ enter
 
 И рекурсивную зону
 ```
-sudo nano /etc/bind/db.127
+sudo nano /etc/bind/db.172
 ctrl+x
 y
 enter
 ```
 ![изображение](https://github.com/user-attachments/assets/8489a772-6f64-4de6-9540-02519ef0b3fb)\
-**Рисунок 48 - db.127**
+**Рисунок 48 - db.172**
 
 Перезапускаем ДНС-сервер
 ```
