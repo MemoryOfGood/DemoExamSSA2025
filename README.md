@@ -485,7 +485,7 @@ routing/ospf/interface-template/add area=ospf-area-1 networks="10.10.10.0/30, 19
 > Настройка индетнична для HQ-RTR и BR-RTR
 
 Переходим в "IP" > "Firewall" > "NAT" и создаём правило\
-![изображение](https://github.com/user-attachments/assets/9ebaf955-3da8-45b8-b787-654aa29477de)\
+![изображение](https://github.com/user-attachments/assets/db7cb39b-fbf4-423a-9155-ef86b4647215)\
 **Рисунок 38**
 
 ![изображение](https://github.com/user-attachments/assets/4202a80b-c9a1-412f-913c-5ee1084eddd3)\
@@ -494,7 +494,7 @@ routing/ospf/interface-template/add area=ospf-area-1 networks="10.10.10.0/30, 19
 
 Командой
 ```
-ip/firewall/nat/add chain=srcnat action=masquerade
+ip/firewall/nat/add chain=srcnat action=masquerade out-interface=ether1
 ```
 
 ### 9. DHCP-сервер на HQ-RTR
