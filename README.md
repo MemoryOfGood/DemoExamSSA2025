@@ -137,7 +137,6 @@ sudo apt update
 ```
 ip/address/add address=172.16.4.2/28 network=172.16.4.0 interface=ether1
 ```
-
 BR-RTR\
 ![{A4E10ED6-56FF-45F9-996E-7A47004495F9}](https://github.com/user-attachments/assets/e04cc1f3-4201-4960-a447-f35fb15d8ce9)\
 **Рисунок 7**
@@ -155,6 +154,28 @@ ip/address/add address=192.168.3.1/27 network=192.168.3.0 interface=ether2
 Командой
 ```
 system/identity/set name=HQ-RTR.au-team.irpo
+```
+
+Добавляем статические маршртуты 
+
+Для HQ-RTR
+Переходим в IP > Routes\
+![изображение](https://github.com/user-attachments/assets/9004e824-65da-4fc9-9bc4-63ea0920a8c0)\
+**Рисунок**
+
+Командой
+```
+ip/route/add dst-address=0.0.0.0/0 gateway=172.16.4.1
+```
+
+Для HQ-RTR
+Переходим в IP > Routes\
+![изображение](https://github.com/user-attachments/assets/e8c6b7ca-8d0d-424c-aba5-392bc0ff274b)\
+**Рисунок**
+
+Командой
+```
+ip/route/add dst-address=0.0.0.0/0 gateway=172.16.5.1
 ```
 
 Для BR-SRV
